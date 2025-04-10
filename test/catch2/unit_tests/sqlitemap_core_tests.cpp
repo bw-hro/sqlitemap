@@ -199,11 +199,11 @@ TEST_CASE("Terminate sqlitemap")
 
     std::cout << std::endl << "static given_file:'" << given_file << "'" << std::endl;
 
-    auto mode = GENERATE(operation_mode::c,  //
-                         operation_mode::w,  //
-                         operation_mode::n); //
+    operation_mode mode = GENERATE(operation_mode::c,  //
+                                   operation_mode::w,  //
+                                   operation_mode::n); //
 
-    auto file_gen = GENERATE_COPY("", ":memory:", given_file.c_str());
+    std::string file_gen = GENERATE_COPY("", ":memory:", given_file.c_str());
 
     std::string file = file_gen;
     if (file_gen != "" && file_gen != ":memory:")
