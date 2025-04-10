@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 
 TEST_CASE("std::for_each")
 {
-    sqlitemap sm;
+    sqlitemap<> sm;
     sm["k1"] = "1";
     sm["k2"] = "2";
     sm["k3"] = "3";
