@@ -15,7 +15,9 @@ namespace fs = std::filesystem;
 
 TEST_CASE("std::for_each")
 {
-    sqlitemap<> sm;
+    auto kc = key_codec<std::string>();
+    auto vc = value_codec<std::string>();
+    auto sm = sqlitemap(config(kc, vc));
     sm["k1"] = "1";
     sm["k2"] = "2";
     sm["k3"] = "3";
