@@ -110,8 +110,10 @@ TEST_CASE("std::find_if_not")
 
 TEST_CASE("std::search")
 {
-#ifdef _WIN32
+#if defined(_WIN32)
     WARN("std::search requires forward_iterator when using MSVC");
+#elif defined(__APPLE__) && defined(TARGET_OS_MAC)
+    WARN("std::search requires forward_iterator when using macOS");
 #else
     sqlitemap sm;
     sm["k1"] = "x";
