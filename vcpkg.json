@@ -4,6 +4,7 @@
   "dependencies": [
     "bw-tempdir",
     "catch2",
-    "sqlite3"
+    "sqlite3",
+    "utfcpp"
   ]
 }

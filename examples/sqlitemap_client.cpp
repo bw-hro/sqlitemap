@@ -2,10 +2,8 @@
 // SPDX-FileCopyrightText: 2024-present Benno Waldhauer
 // SPDX-License-Identifier: MIT
 
-#include <codecvt>
 #include <iomanip>
 #include <iostream>
-#include <locale>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -13,6 +11,7 @@
 #include <vector>
 
 #include <bw/sqlitemap/sqlitemap.hpp>
+#include <utf8cpp/utf8.h>
 
 using namespace bw::sqlitemap;
 
@@ -132,18 +131,6 @@ std::string mode_to_detailed_string(bw::sqlitemap::operation_mode mode)
     }
 }
 
-std::wstring utf8_to_wstring(const std::string& str)
-{
-    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
-    return converter.from_bytes(str);
-}
-
-std::string wstring_to_utf8(const std::wstring& wstr)
-{
-    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
-    return converter.to_bytes(wstr);
-}
-
 class sqlitemap_client
 {
   private:
@@ -163,30 +150,44 @@ class sqlitemap_client
 
         std::string render_top_border() const
         {
-            wchar_t row_sep = utf8_to_wstring(row_separator).at(0);
-            std::wstring bar(2 + max_key_length + 3 + max_value_length + 2, row_sep);
+            size_t bar_size = 2 + max_key_length + 3 + max_value_length + 2;
+            std::string bar;
 
-            bar[0] = L'┌';
-            bar[2 + max_key_length + 1] = L'┬';
-            bar[bar.size() - 1] = L'┐';
+            for (int i = 0; i < bar_size; i++)
+            {
+                if (i == 0)
+                    bar.append("┌");
+                else if (i == 2 + max_key_length + 1)
+                    bar.append("┬");
+                else if (i == bar_size - 1)
+                    bar.append("┐");
+                else
+                    bar.append(row_separator);
+            }
 
-            std::wstring rowid_border(rowid_space + 1, ' ');
-
-            return wstring_to_utf8(rowid_border + bar);
+            std::string rowid_border(rowid_space + 1, ' ');
+            return rowid_border + bar;
         }
 
         std::string render_bottom_border() const
         {
-            wchar_t row_sep = utf8_to_wstring(row_separator).at(0);
-            std::wstring bar(2 + max_key_length + 3 + max_value_length + 2, row_sep);
+            size_t bar_size = 2 + max_key_length + 3 + max_value_length + 2;
+            std::string bar;
 
-            bar[0] = L'└';
-            bar[2 + max_key_length + 1] = L'┴';
-            bar[bar.size() - 1] = L'┘';
+            for (int i = 0; i < bar_size; i++)
+            {
+                if (i == 0)
+                    bar.append("└");
+                else if (i == 2 + max_key_length + 1)
+                    bar.append("┴");
+                else if (i == bar_size - 1)
+                    bar.append("┘");
+                else
+                    bar.append(row_separator);
+            }
 
-            std::wstring rowid_border(rowid_space + 1, ' ');
-
-            return wstring_to_utf8(rowid_border + bar);
+            std::string rowid_border(rowid_space + 1, ' ');
+            return rowid_border + bar;
         }
 
         std::string render_row(const std::string& key, const std::string& value,
@@ -204,16 +205,29 @@ class sqlitemap_client
 
         std::string render_element(const std::string& element_u8, int max_size) const
         {
-            std::wstring abbr = L"...";
-            std::wstring element = utf8_to_wstring(element_u8);
+            std::string abbr = "...";
+            size_t abbr_size = utf8::distance(abbr.begin(), abbr.end());
 
-            if (element.size() > max_size && max_size && max_size > abbr.size())
+            size_t element_size = utf8::distance(element_u8.begin(), element_u8.end());
+            if (element_size > max_size && max_size > abbr_size)
             {
-                return wstring_to_utf8(element.substr(0, max_size - abbr.size()) + abbr);
+                std::string abbr_element;
+
+                auto utf8_it = utf8::iterator<std::string::const_iterator>(
+                    element_u8.begin(), element_u8.begin(), element_u8.end());
+
+                utf8::iterator<std::string::const_iterator> utf8_end(
+                    element_u8.end(), element_u8.begin(), element_u8.end());
+
+                for (int i = 0; i < (max_size - abbr_size) && utf8_it != utf8_end; ++i, ++utf8_it)
+                {
+                    utf8::append(*utf8_it, std::back_inserter(abbr_element));
+                }
+                return abbr_element + abbr;
             }
 
-            int num_spaces_to_add = max_size - element.size();
-            return wstring_to_utf8(element.append(num_spaces_to_add, L' '));
+            int num_spaces_to_add = max_size - element_size;
+            return element_u8 + std::string(num_spaces_to_add, ' ');
         }
     } layout;
 

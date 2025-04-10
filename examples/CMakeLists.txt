@@ -1,4 +1,6 @@
-set(INCLUDES_FOR_EXAMPLES ../include)
+find_path(UTF8CPP_INCLUDE_DIR "utf8cpp/utf8.h")
+
+set(INCLUDES_FOR_EXAMPLES ../include UTF8CPP_INCLUDE_DIR)
 set(LIBS_FOR_EXAMPLES 
     unofficial::sqlite3::sqlite3
 )
