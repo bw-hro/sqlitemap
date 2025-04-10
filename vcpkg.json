@@ -1,0 +1,9 @@
+{
+  "name": "sqlitemap",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "bw-tempdir",
+    "catch2",
+    "sqlite3"
+  ]
+}

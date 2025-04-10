@@ -1,0 +1,41 @@
+name: Windows
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Setup vcpkg
+      run: |
+        python .\tools\install-vcpkg.py
+      
+    - name: Build
+      run: |
+        .\build.bat clean release
+
+    - name: Upload binaries
+      uses: actions/upload-artifact@v4
+      with:
+        name: binaries
+        path: |
+          .\build\examples\Release\sqlitemap.exe
+          .\build\examples\Release\sqlitemap_tiles.exe
+          .\build\examples\Release\lines2sqlitemap.exe
+          .\build\test\Release\tests.exe

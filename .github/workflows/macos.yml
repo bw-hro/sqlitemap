@@ -1,0 +1,43 @@
+name: macOS
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Setup vcpkg
+      run: |
+        python ./tools/install-vcpkg.py
+
+    - name: Build
+      run: |
+        chmod +x ./build.sh
+        ./build.sh clean release
+        chmod +x ./build/examples/sqlitemap
+        chmod +x ./build/examples/sqlitemap_tiles
+        chmod +x ./build/examples/lines2sqlitemap
+        chmod +x ./build/test/tests
+
+    - name: Upload binaries
+      uses: actions/upload-artifact@v4
+      with:
+        name: binaries
+        path: |
+          ./build/examples/sqlitemap
+          ./build/examples/sqlitemap_tiles
+          ./build/examples/lines2sqlitemap
+          ./build/test/tests

@@ -1,0 +1,5 @@
+build/
+lib/
+tools/vcpkg/
+.vscode/
+todo*
