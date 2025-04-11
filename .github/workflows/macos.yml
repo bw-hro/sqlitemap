@@ -32,7 +32,7 @@ jobs:
     - name: Build
       run: |
         chmod +x ./build.sh
-        ./build.sh clean release
+        ./build.sh clean release clang
         chmod +x ./build/examples/sqlitemap
         chmod +x ./build/examples/sqlitemap_tiles
         chmod +x ./build/examples/lines2sqlitemap

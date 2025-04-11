@@ -51,6 +51,14 @@ else
 fi
 echo "project build examples: $build_examples"
 
+if [[ "${@#clang}" = "$@" ]]
+then
+    compiler="g++"
+else
+    compiler="clang++"
+fi
+echo "compiler: $compiler"
+
 cmake -B build -S . \
     -D"SM_BUILD_TESTS=$build_tests" \
     -D"SM_SKIP_TESTS=$skip_tests" \
@@ -59,7 +67,7 @@ cmake -B build -S . \
     -D"CMAKE_BUILD_TYPE=$build_type" \
     -D"CMAKE_TOOLCHAIN_FILE=$toolchain_file" \
     -D"CMAKE_MAKE_PROGRAM:PATH=make" \
-    -D"CMAKE_CXX_COMPILER=g++"
+    -D"CMAKE_CXX_COMPILER=$compiler"
 
 cmake --build build --parallel $(nproc)
 
