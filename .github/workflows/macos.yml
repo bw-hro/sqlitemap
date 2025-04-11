@@ -14,6 +14,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Install LLVM and Clang
+      uses: KyleMayes/install-llvm-action@v2
+      with:
+        version: "18.1"
+        env: true
+
     - name: Setup Python
       uses: actions/setup-python@v5
       with:

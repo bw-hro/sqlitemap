@@ -5,6 +5,7 @@
 #pragma once
 
 #include <chrono>
+#include <cstddef>
 #include <cstring>
 #include <filesystem>
 #include <functional>
@@ -306,7 +307,7 @@ template <typename T> int bind_param(sqlite3_stmt* stmt, int index, const T& val
     {
         return sqlite3_bind_blob(stmt, index, value.data(), value.size(), SQLITE_TRANSIENT);
     }
-    else if constexpr (std::is_same_v<T, nullptr_t>)
+    else if constexpr (std::is_same_v<T, std::nullptr_t>)
     {
         return sqlite3_bind_null(stmt, index);
     }
@@ -315,7 +316,7 @@ template <typename T> int bind_param(sqlite3_stmt* stmt, int index, const T& val
         // compile time error for not supported types
         static_assert(has_native_sqlite_support<T>(),
                       "Unsupported type for sqlite3_bind. Supported types are std::string, "
-                      "integral types, floating-point types, and nullptr_t.");
+                      "integral types, floating-point types, and std::nullptr_t.");
         return SQLITE_ERROR; // should never be reached
     }
 }
