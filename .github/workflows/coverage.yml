@@ -1,0 +1,56 @@
+name: Code Coverage
+
+permissions:
+  pull-requests: write
+  contents: write
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  coverage_report:
+    name: Generate coverage report
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Setup vcpkg
+      run: |
+        python ./tools/install-vcpkg.py
+        
+    - name: Setup lcov
+      uses: hrishikesh-kadam/setup-lcov@v1
+
+    - name: Generate lcov input
+      run: |
+        chmod +x ./build.sh
+        chmod +x ./test/coverage.sh
+        ./test/coverage.sh
+
+    - name: Report code coverage
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: zgosalvez/github-actions-report-lcov@v4
+      with:
+        coverage-files: build/filtered_coverage.info
+        minimum-coverage: 80
+        artifact-name: code-coverage-report
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        update-comment: true
+
+    - name: Upload code coverage report
+      if: ${{ github.ref_name == 'master' && github.event_name == 'push' }}
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: build/coverage_report
+        target-folder: coverage-report
+        branch: gh-pages
