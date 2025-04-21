@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sqlitemap &mdash; Persistent Map Backed by SQLite</title>
+    <style>
+        body {
+            margin: 2rem 3rem 3rem;
+            max-width: 80ch;
+        }
+
+        header {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+        }
+
+        h2 {
+            font-size: 1.3em;
+        }
+
+        article p,
+        dt,
+        dd {
+            line-height: 1.6rem;
+            font-size: 1.1rem;
+            max-width: 65ch;
+        }
+
+        dd {
+            margin-bottom: 1rem;
+        }
+
+        hr {
+            margin: 1.5rem 0;
+        }
+
+        img {
+            vertical-align: middle;
+            margin-left: 1rem;
+        }
+
+        pre {
+            background: lightgray;
+            padding: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <hr />
+
+    <header>
+        <h1>sqlitemap &mdash; Persistent Map Backed by SQLite</h1>
+        <p>Benno Waldhauer &mdash; Github: <a
+                href="https://github.com/bw-hro/sqlitemap">https://github.com/bw-hro/sqlitemap</a> <a
+                href="./coverage-report/"><img src="./coverage-report/badge.svg" /></a></p>
+    </header>
+    <hr />
+    <article>
+        <p><i>sqlitemap</i> is a lightweight C++ wrapper around SQLite that provides a simple, map-like interface.
+            It’s designed to make working with key-value storage easy and convenient — similar to how <a
+                href="https://github.com/piskvorky/sqlitedict">sqlitedict</a> works in the Python world.
+        </p>
+        <p><i>sqlitemap</i> is distributed under the MIT license, without any warranty.</p>
+        <h2>Features</h2>
+        <ul>
+            <li>Persistent key-value storage using SQLite</li>
+            <li>Easy-to-use map-like interface in C++</li>
+            <li>Minimal dependencies (just requires SQLite)</li>
+        </ul>
+        <h2>Example</h2>
+        <code><pre>
+#include &lt;bw/sqlitemap/sqlitemap.hpp&gt;
+
+int main()
+{
+    bw::sqlitemap::sqlitemap db(&quot;example.db&quot;);
+
+    db[&quot;hello&quot;] = &quot;world&quot;;
+    std::string value = db[&quot;hello&quot;];
+
+    std::cout &lt;&lt; value &lt;&lt; std::endl;
+}
+</pre></code>
+    </article>
+</body>
+
+</html>
