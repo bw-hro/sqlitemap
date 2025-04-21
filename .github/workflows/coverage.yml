@@ -48,7 +48,7 @@ jobs:
         update-comment: true
 
     - name: Upload code coverage report
-      if: ${{ github.ref_name == 'master' && github.event_name == 'push' }}
+      if: ${{ github.ref_name == 'main' && github.event_name == 'push' }}
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         folder: build/coverage_report
