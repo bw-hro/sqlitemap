@@ -1,0 +1,1 @@
+genhtml /home/runner/work/sqlitemap/sqlitemap/test/../build/filtered_coverage.info -o /home/runner/work/sqlitemap/sqlitemap/test/../build/coverage_report --html-prolog /home/runner/work/sqlitemap/sqlitemap/test/../build/coverage_report_prolog.html
