@@ -1130,13 +1130,11 @@ TEST_CASE("Iterator std::prev not supported")
     REQUIRE(n1->first == "k2");
 
 #ifdef _WIN32
-    {
-        WARN("MSVC doesn't support calling std::prev for non bidirectional iterators");
-    }
+    WARN("MSVC doesn't support calling std::prev for non bidirectional iterators");
+#elif defined(__APPLE__) && defined(TARGET_OS_MAC)
+    WARN("Clang on macOS doesn't support calling std::prev for non bidirectional iterators");
 #else
-    {
-        REQUIRE_THROWS_AS(std::prev(n1, 1), std::out_of_range);
-    }
+    REQUIRE_THROWS_AS(std::prev(n1, 1), std::out_of_range);
 #endif
 }
 
