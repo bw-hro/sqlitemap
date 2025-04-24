@@ -368,7 +368,7 @@ template <typename R, typename C, typename Arg> struct function_traits<R (C::*)(
     using argument_type = Arg;
 };
 
-// Ensure you specialize for non-const lambdas (just in case)
+// Ensure specialization for non-const lambdas
 template <typename R, typename C, typename Arg> struct function_traits<R (C::*)(Arg)>
 {
     using return_type = R;
@@ -453,6 +453,20 @@ template <typename T> T identity(const T& input)
 {
     return input;
 }
+
+/**
+ * @class codec
+ * @brief Base class for encoding and decoding operations.
+ *
+ * This template struct provides a common interface for encoding and decoding
+ * operations, which are used for converting between different data types.
+ *
+ * @tparam IN The input type for encoding.
+ * @tparam OUT The output type for decoding.
+ *
+ * codec is a fundamental building block of the database management system,
+ * providing the necessary functionality for encoding and decoding operations.
+ */
 
 template <typename IN, typename OUT> struct codec
 {
@@ -554,6 +568,20 @@ template <typename TAG, typename TYPE> auto taged_codec_from()
     return taged_codec_from<TAG, ED, ED>(identity<TYPE>, identity<TYPE>);
 }
 
+/**
+ * @class codec_pair
+ * @brief Combines key and value codecs for database operations.
+ *
+ * This template struct pairs a key codec and a value codec, which are used
+ * for encoding and decoding database keys and values, respectively.
+ *
+ * @tparam KC The key codec type.
+ * @tparam VC The value codec type.
+ *
+ * codec_pair is a fundamental building block of the database management system,
+ * providing the necessary codecs for key and value operations.
+ */
+
 template <typename KC, typename VC> struct codec_pair
 {
     codec_pair(KC k, VC v)
@@ -634,6 +662,19 @@ constexpr const char* default_table = "unnamed";
 constexpr operation_mode default_mode = operation_mode::c;
 constexpr bool default_auto_commit = false;
 constexpr log_level default_log_level = log_level::off;
+
+/**
+ * @class configuration
+ * @brief Manages database configuration and codec pairs.
+ *
+ * This template class stores and manages configuration parameters for a database
+ * connection, including the codec pair for key and value encoding/decoding.
+ *
+ * @tparam CODEC_PAIR The codec pair type used for encoding and decoding.
+ *
+ * configuration is a key component of the database management system, providing
+ * a structured way to configure database connections and codec pairs.
+ */
 
 template <typename CODEC_PAIR> class configuration
 {
@@ -769,6 +810,26 @@ enum class column_option
     value,
     key_value,
 };
+
+/**
+ * @class lazy_result
+ * @brief Provides lazy evaluation and caching of SQL query results.
+ *
+ * This template class manages the deferred (lazy) evaluation of results from
+ * SQL queries executed on a SQLite database. It decodes keys and values using
+ * a provided codec pair and supports different column retrieval modes via the
+ * column_option template parameter.
+ *
+ * The class internally manages the SQLite statement lifecycle and caches results
+ * as they are accessed, allowing efficient repeated access to previously evaluated rows.
+ *
+ * @tparam CODEC_PAIR The codec pair type used for encoding and decoding.
+ * @tparam KV The key-value type for the result set.
+ * @tparam COL_OPT The column option type (key, value, or key_value).
+ *
+ * lazy_result is designed for single-pass or sequential access patterns, but it caches
+ * all evaluated rows for efficient repeated access. It is not thread-safe.
+ */
 
 template <typename CODEC_PAIR, typename KV, column_option COL_OPT> class lazy_result
 {
@@ -932,6 +993,26 @@ template <typename CODEC_PAIR, typename KV, column_option COL_OPT> class lazy_re
     mutable std::vector<value_type> _data;
 };
 
+/**
+ * @class sqlitemap_iterator
+ * @brief An input iterator for iterating over SQL query results.
+ *
+ * This template class provides an iterator interface for traversing
+ * the results of an SQL query executed on a SQLite database. It supports
+ * standard input iterator operations such as incrementing and dereferencing.
+ *
+ * @tparam CODEC_PAIR The codec pair type used for encoding and decoding.
+ * @tparam KV The key-value type for the iterator.
+ * @tparam COL_OPT The column option type.
+ *
+ * The iterator is constructed either from a database query or directly
+ * from a row. It uses a lazy evaluation strategy to fetch results as needed.
+ * The iterator ensures that it does not advance past the end of the result set.
+ *
+ * @note This iterator is limited to input operations only, meaning it can
+ * only be used for single-pass algorithms that process elements sequentially.
+ * It does not support operations such as bidirectional traversal or random access.
+ */
 template <typename CODEC_PAIR, typename KV, column_option COL_OPT> class sqlitemap_iterator
 {
   public:
@@ -1056,7 +1137,20 @@ template <typename CODEC_PAIR, typename KV, column_option COL_OPT> class sqlitem
     std::shared_ptr<result_type> _lazy_result;
     bool _is_end;
 };
-
+/**
+ * @class const_sqlitemap_iterator
+ * @brief Const iterator for iterating over database rows.
+ *
+ * This template class provides a const iterator for iterating over database rows,
+ * which is the const version of sqlitemap_iterator.
+ *
+ * @tparam CODEC_PAIR The codec pair type used for encoding and decoding.
+ * @tparam KV The key-value type used for database operations.
+ * @tparam COL_OPT The column option used for database operations.
+ *
+ * const_sqlitemap_iterator is the const version of sqlitemap_iterator and follows the same
+ * principles.
+ */
 template <typename CODEC_PAIR, typename KV, column_option COL_OPT> class const_sqlitemap_iterator
 {
   public:
@@ -1184,6 +1278,32 @@ template <typename K, typename V> struct sqlitemap_node_type
     value_type kv;
 };
 
+/**
+ * @class sqlitemap
+ * @brief High-level C++ interface for SQLite-based key-value maps with codec support.
+ *
+ * This template class provides a flexible, type-safe, and efficient interface for managing
+ * key-value data in a SQLite database. It supports custom codecs for encoding/decoding keys
+ * and values, allowing seamless integration with a variety of C++ types and database schemas.
+ *
+ * The class exposes STL-like map operations, including insertion, lookup, deletion, and iteration.
+ * It supports both mutable and const iterators for traversing key-value pairs, keys, or values.
+ *
+ * Key features:
+ *   - Customizable key/value codecs via the CODEC_PAIR template parameter
+ *   - STL-style interface (find, insert, erase, begin/end iterators, etc.)
+ *   - Efficient lazy evaluation and caching of query results
+ *   - Strong type safety for all operations
+ *   - Integration with custom configuration objects
+ *
+ * @tparam CODEC_PAIR The codec pair type used for encoding and decoding keys and values.
+ * Defaults to the codec pair from the global config().
+ *
+ *
+ * @note Only single-pass iteration is supported to enable lazy evaluation and caching of query
+ * results. As a result, iterators returned by STL-like operations are intended solely for data
+ * access; advancing or reusing them in multiple passes is not supported.
+ */
 template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
 {
   public:
