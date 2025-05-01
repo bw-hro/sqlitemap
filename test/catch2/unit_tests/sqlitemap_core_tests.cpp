@@ -787,6 +787,12 @@ TEST_CASE("Get")
     // operator[] store and return default constructed value when key is missing, like std::map does
     REQUIRE((sm["k1"] == std::string()));
     REQUIRE(sm.get("k1") == "");
+
+    // operator[] can be used as input for operator<<
+    sm["k1"] = "v1";
+    std::ostringstream oss;
+    oss << "k1=" << sm["k1"];
+    REQUIRE(oss.str() == "k1=v1");
 }
 
 TEST_CASE("Find entries")

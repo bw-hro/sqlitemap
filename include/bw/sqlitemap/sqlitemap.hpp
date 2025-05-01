@@ -1367,6 +1367,12 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
         sqlitemap<CODEC_PAIR>* _map;
         K _key;
         V _val;
+
+        friend std::ostream& operator<<(std::ostream& os, const value_ref& ref)
+        {
+            os << ref._val;
+            return os;
+        }
     };
 
     sqlitemap(std::string filename = default_filename, std::string table = default_table,
@@ -1417,7 +1423,7 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
         log().debug("sqlitemap - file: '" + _config.filename() + "' table: '" + _config.table() +
                     "' sqlite3_libversion: " + sqlite3_libversion());
 
-        connect(_config.filename());
+        connect();
     }
 
     ~sqlitemap()
@@ -1458,13 +1464,15 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
         }
     }
 
-    void connect(const std::string& file)
+    // Connects to the underlying database and initializes the table if required. Throws exception
+    // in error cases.
+    void connect()
     {
         using namespace codecs;
 
         try
         {
-            open_database(file);
+            open_database(config().filename());
 
             if (is_read_only())
             {
