@@ -27,7 +27,7 @@ The library is implemented as a **single-header** file, making integration easy 
 
 - Just include the [sqlitemap.hpp](include/bw/sqlitemap/sqlitemap.hpp) file into your project
 - Make sure that [SQLite](https://sqlite.org) is available
-- vcpkg support will be added  as soon as possible
+- vcpkg support will be added as soon as possible
 
 ## Usage
 
