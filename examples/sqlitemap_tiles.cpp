@@ -3,13 +3,6 @@
 // SPDX-License-Identifier: MIT
 
 #include <array>
-#include <atomic>
-#include <chrono>
-#include <csignal>
-#include <iostream>
-#include <regex>
-#include <string>
-
 #include <bw/sqlitemap/sqlitemap.hpp>
 
 namespace sm = bw::sqlitemap;

@@ -282,20 +282,20 @@ TEST_CASE("what happens when sqlitemap is opened with wrong storage type?", "[co
     std::string file = (temp_dir.path() / "db.sqlite").string();
 
     { // open db int -> double
-        sqlitemap sm(config<int, double>().filename(file));
+        sqlitemap sm(config<int, double>().filename(file).auto_commit(true));
         REQUIRE_NOTHROW(sm.set(1, 4.2));
         REQUIRE(sm.get(1) == Catch::Approx(4.2));
     }
 
     { // open db int -> std::string
-        sqlitemap sm(config<int, std::string>().filename(file));
+        sqlitemap sm(config<int, std::string>().filename(file).auto_commit(true));
         REQUIRE_NOTHROW(sm.set(2, "John Doe"));
         REQUIRE((sm.get(2) == "John Doe"));
         REQUIRE((sm[1] == "4.2")); // double will be converted automatically to std::string
     }
 
     { // open db int -> double again
-        sqlitemap sm(config<int, double>().filename(file));
+        sqlitemap sm(config<int, double>().filename(file).auto_commit(true));
         REQUIRE(sm.get(1) == Catch::Approx(4.2));
         REQUIRE(sm.get(2) == Catch::Approx(0)); // name can not be converted to int, falls back to 0
     }

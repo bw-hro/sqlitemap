@@ -1949,8 +1949,10 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
 
     void close()
     {
+        if (config().auto_commit())
+            commit();
+
         // Close the database connection
-        commit();
         sqlite3_close(db);
         log().debug("Database closed");
 

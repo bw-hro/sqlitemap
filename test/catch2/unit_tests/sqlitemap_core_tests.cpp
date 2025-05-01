@@ -38,6 +38,7 @@ TEST_CASE("sqlitemap assignment")
             : db(file, "cache")
         {
             db.set("app-1", "123");
+            db.commit();
         }
 
       private:
@@ -263,6 +264,7 @@ TEST_CASE("Read-only mode 'r' does not allow sqlitemap db creation/termination")
     { // ensure db exists with contents
         sqlitemap sm(config().filename(file).table("table_a").mode(operation_mode::c));
         sm.set("k1", "v1");
+        sm.commit();
     }
 
     REQUIRE(std::filesystem::exists(file));
@@ -299,6 +301,7 @@ TEST_CASE("Read-only mode 'r' does not allow to change sqlitemap")
     { // ensure db exists with contents
         sqlitemap sm(config().filename(file).table("table_a").mode(operation_mode::c));
         sm.set("k1", "v1");
+        sm.commit();
     }
 
     REQUIRE(std::filesystem::exists(file));
@@ -417,6 +420,7 @@ TEST_CASE("Write mode 'w' drops table contents on initialization")
     { // create db with content
         sqlitemap sm(config().filename(file).mode(operation_mode::c));
         sm.set("k1", "v1");
+        sm.commit();
         REQUIRE((sm["k1"] == "v1"));
     }
 
@@ -1390,13 +1394,18 @@ TEST_CASE("Rollback when auto_commit is enabled")
     REQUIRE(sm.get("k5") == "v5");
 }
 
-TEST_CASE("Changes will be committed on close")
+TEST_CASE("Changes will be committed on close when auto commit mode is active")
 {
+    auto kc = key_codec<std::string>();
+    auto vc = value_codec<std::string>();
+    using codecs_pair_t = codecs::codec_pair<decltype(kc), decltype(vc)>;
+
     TempDir temp_dir(Config().enable_logging());
     auto file = (temp_dir.path() / "db.sqlite").string();
 
-    sqlitemap sm(config().filename(file).auto_commit(false));
-    sqlitemap client(config().filename(file).auto_commit(false));
+    // auto commit is disabled
+    sqlitemap<codecs_pair_t> sm(config(kc, vc).filename(file).auto_commit(false));
+    sqlitemap<codecs_pair_t> client(config(kc, vc).filename(file).auto_commit(false));
 
     REQUIRE(sm.empty());
     REQUIRE(client.empty());
@@ -1405,12 +1414,43 @@ TEST_CASE("Changes will be committed on close")
     sm.set("k3", "v3");
 
     REQUIRE(client.empty());
+
+    auto& mutable_config = const_cast<configuration<codecs_pair_t>&>(sm.config());
+    mutable_config.auto_commit(true); // enable auto commit
     sm.close();
 
     REQUIRE(client.size() == 3);
     REQUIRE(client.get("k1") == "v1");
     REQUIRE(client.get("k2") == "v2");
     REQUIRE(client.get("k3") == "v3");
+}
+
+TEST_CASE("Changes will be discarded on close when not committed")
+{
+    TempDir temp_dir(Config().enable_logging());
+    auto file = (temp_dir.path() / "db.sqlite").string();
+
+    // auto commit is disabled
+    sqlitemap sm(config().filename(file).auto_commit(false));
+    sqlitemap client(config().filename(file).auto_commit(false));
+
+    REQUIRE(sm.empty());
+    REQUIRE(client.empty());
+    sm.set("k1", "v1");
+    sm.commit();
+    sm.set("k2", "v2");
+    sm.set("k3", "v3");
+
+    REQUIRE(client.size() == 1);
+    REQUIRE(client.get("k1") == "v1");
+    sm.close();
+
+    REQUIRE(client.size() == 1);
+    REQUIRE(client.get("k1") == "v1");
+
+    sqlitemap another_client(config().filename(file).auto_commit(false));
+    REQUIRE(another_client.size() == 1);
+    REQUIRE(another_client.get("k1") == "v1");
 }
 
 TEST_CASE("sqlitemap can be used to cache big chunks of data")
@@ -1433,7 +1473,7 @@ TEST_CASE("sqlitemap can be used to cache big chunks of data")
     }
 
     { // write
-        sqlitemap sm(config().filename(file.string()));
+        sqlitemap sm(config().filename(file.string()).auto_commit(true));
         sm["img1"] = random_string;
         sm["img2"] = random_string;
         sm["img3"] = random_string;
