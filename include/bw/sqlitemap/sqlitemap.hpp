@@ -461,32 +461,33 @@ template <typename T> T identity(const T& input)
  * This template struct provides a common interface for encoding and decoding
  * operations, which are used for converting between different data types.
  *
- * @tparam IN The input type for encoding.
- * @tparam OUT The output type for decoding.
+ * @tparam IN_T The input type for encoding.
+ * @tparam OUT_T The output type for decoding.
  *
  * codec is a fundamental building block of the database management system,
  * providing the necessary functionality for encoding and decoding operations.
  */
 
-template <typename IN, typename OUT> struct codec
+template <typename IN_T, typename OUT_T> struct codec
 {
-    using in_type = IN;
-    using out_type = OUT;
+    using in_type = IN_T;
+    using out_type = OUT_T;
 
-    const std::function<OUT(const IN&)> encode;
-    const std::function<IN(const OUT&)> decode;
+    const std::function<OUT_T(const IN_T&)> encode;
+    const std::function<IN_T(const OUT_T&)> decode;
 };
 
 struct key_codec_tag
 {
 };
 
-template <typename IN, typename OUT> struct key_codec : public codec<IN, OUT>, public key_codec_tag
+template <typename IN_T, typename OUT_T>
+struct key_codec : public codec<IN_T, OUT_T>, public key_codec_tag
 {
-    using codec<IN, OUT>::codec;
+    using codec<IN_T, OUT_T>::codec;
 
-    key_codec(std::function<OUT(const IN&)> encode, std::function<IN(const OUT&)> decode)
-        : codec<IN, OUT>{encode, decode}
+    key_codec(std::function<OUT_T(const IN_T&)> encode, std::function<IN_T(const OUT_T&)> decode)
+        : codec<IN_T, OUT_T>{encode, decode}
     {
     }
 };
@@ -496,22 +497,23 @@ template <typename T> struct is_key_codec : std::false_type
     // Default case, not a key_codec specialization
 };
 
-template <typename IN, typename OUT> struct is_key_codec<key_codec<IN, OUT>> : std::true_type
+template <typename IN_T, typename OUT_T>
+struct is_key_codec<key_codec<IN_T, OUT_T>> : std::true_type
 {
-    // Specialization for key_codec<IN, OUT>
+    // Specialization for key_codec<IN_T, OUT_T>
 };
 
 struct value_codec_tag
 {
 };
 
-template <typename IN, typename OUT>
-struct value_codec : public codec<IN, OUT>, public value_codec_tag
+template <typename IN_T, typename OUT_T>
+struct value_codec : public codec<IN_T, OUT_T>, public value_codec_tag
 {
-    using codec<IN, OUT>::codec;
+    using codec<IN_T, OUT_T>::codec;
 
-    value_codec(std::function<OUT(const IN&)> encode, std::function<IN(const OUT&)> decode)
-        : codec<IN, OUT>{encode, decode}
+    value_codec(std::function<OUT_T(const IN_T&)> encode, std::function<IN_T(const OUT_T&)> decode)
+        : codec<IN_T, OUT_T>{encode, decode}
     {
     }
 };
@@ -521,9 +523,10 @@ template <typename T> struct is_value_codec : std::false_type
     // Default case, not a value_codec specialization
 };
 
-template <typename IN, typename OUT> struct is_value_codec<value_codec<IN, OUT>> : std::true_type
+template <typename IN_T, typename OUT_T>
+struct is_value_codec<value_codec<IN_T, OUT_T>> : std::true_type
 {
-    // Specialization for value_codec<IN, OUT>
+    // Specialization for value_codec<IN_T, OUT_T>
 };
 
 template <typename T> struct unknown_codec_tag : std::false_type
@@ -589,10 +592,10 @@ template <typename KC, typename VC> struct codec_pair
         , value_codec(v)
     {
         static_assert(is_key_codec<std::decay_t<KC>>::value,
-                      "KC must be a specialization of key_codec<IN, OUT>");
+                      "KC must be a specialization of key_codec<IN_T, OUT_T>");
 
         static_assert(is_value_codec<std::decay_t<VC>>::value,
-                      "VC must be a specialization of value_codec<IN, OUT>");
+                      "VC must be a specialization of value_codec<IN_T, OUT_T>");
     }
 
     using key_in_type = typename KC::in_type;
