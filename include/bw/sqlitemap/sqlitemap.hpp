@@ -654,10 +654,10 @@ inline auto default_value_codec = value_codec<std::string>();
 
 enum class operation_mode
 {
-    c,
-    r,
-    w,
-    n
+    c, // default, open db for read/write, creating table if not exists
+    r, // open db as read-only
+    w, // open db for read/write, but drop table contents first
+    n  // create new database (erasing _all_ existing tables!)
 };
 
 constexpr const char* default_filename = "";
@@ -760,6 +760,36 @@ template <typename CODEC_PAIR> class configuration
         return _log_impl;
     }
 
+    configuration& pragma(const std::string& flag, int value)
+    {
+        return pragma(flag, std::to_string(value));
+    }
+
+    configuration& pragma(const std::string& flag, const std::string& value)
+    {
+        return pragma("PRAGMA " + flag + " = " + value);
+    }
+
+    configuration& pragma(const std::string& statement)
+    {
+        std::string prefix = "PRAGMA ";
+        if (statement.size() < prefix.size() ||
+            !std::equal(prefix.begin(), prefix.end(), statement.begin(),
+                        [](char a, char b) { return std::tolower(a) == std::tolower(b); }))
+        {
+            _pragma_statements.push_back(prefix + statement);
+            return *this;
+        }
+
+        _pragma_statements.push_back(statement);
+        return *this;
+    }
+
+    const std::vector<std::string>& pragmas() const
+    {
+        return _pragma_statements;
+    }
+
   private:
     CODEC_PAIR _codecs;
     std::string _filename = default_filename;
@@ -768,6 +798,7 @@ template <typename CODEC_PAIR> class configuration
     bool _auto_commit = default_auto_commit;
     bw::sqlitemap::log_level _log_level = default_log_level;
     logger::log_function _log_impl;
+    std::vector<std::string> _pragma_statements;
 };
 
 template <typename CODEC_PAIR> auto config(CODEC_PAIR codec)
@@ -1488,6 +1519,12 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
                 }
             }
 
+            // execute pragma statements
+            for (const auto& pragma_statement : config().pragmas())
+            {
+                details::exec_checked(db, pragma_statement);
+            }
+
             // create table if missing
             auto key_type = codecs::to_string(sqlite_storage_class_from_type<db_key_type>());
             auto value_type = codecs::to_string(sqlite_storage_class_from_type<db_mapped_type>());
@@ -1495,6 +1532,7 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
                                         " PRIMARY KEY, value " + value_type + ")");
 
             details::exec_checked(db, create_table_sql);
+            commit();
             log().debug("Table '" + config().table() + "' created successfully");
 
             if (config().mode() == operation_mode::w)
@@ -1507,6 +1545,13 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
             sqlite3_close(db);
             throw;
         }
+    }
+
+    // Get the underlying SQLite connection object, this is used for advanced users
+    // who want to use the connection directly to execute custom queries
+    sqlite3* get_connection() const
+    {
+        return db;
     }
 
     void set(const key_type& key, const mapped_type& value)

@@ -79,7 +79,7 @@ void show_usage()
               << "  -t <table>      Table name\n"
               << "  -c, -r, -w, -n  Operation modes:\n"
               << "                  c - default, open for r/w, creating db/table\n"
-              << "                  r - open as ready-only\n"
+              << "                  r - open as read-only\n"
               << "                  w - open for r/w, but drop <table> contents first\n"
               << "                  n - create new database (erasing existing tables!)\n"
               << "  -a, -x          Auto-commit (a=on, x=off)\n"

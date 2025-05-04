@@ -261,6 +261,28 @@ int main()
         .mode(operation_mode::r));
 }
 ```
+In addition to the application-level `operation_mode`, the behavior of underlying SQLite database can be configured using [PRAGMA statements](https://www.sqlite.org/pragma.html). **sqlitemap** provides a convenient API to set these pragmas, which are executed when the connection to the database is established.
+
+An example of configuring **sqlitemap** to optimize for high-concurrency workloads.
+
+```cpp
+#include <bw/sqlitemap/sqlitemap.hpp>
+
+int main()
+{
+    using namespace bw::sqlitemap;
+
+    sqlitemap sm(config()
+        .filename("example.sqlite")
+        .pragma("journal_mode", "WAL") // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
+        .pragma("cache_size", -64000)   // -64000 = 4000KiB, 64000 = number of pages
+        .pragma("temp_store = 2")      // 0 = DEFAULT, 1 = FILE, 2 = MEMORY
+        .pragma("PRAGMA synchronous = NORMAL")); // 0 = OFF, 1 = NORMAL, 2 = FULL
+
+        // configuration.pragma(...) accepts a whole statement, or a flag-value pair
+        // it prepends statements with "PRAGMA " when this prefix is missing
+}
+```
 
 ### Encoding/Decoding
 

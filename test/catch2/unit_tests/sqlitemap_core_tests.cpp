@@ -1572,3 +1572,55 @@ TEST_CASE("Check auto_commit options")
         return sm;
     };
 }
+
+TEST_CASE("PRAGMA statements can be used to set SQLite options")
+{
+    auto get_db_option = [](sqlite3* db, const std::string& pragma_statement) -> std::string
+    {
+        auto pragma_callback = [](void* result, int argc, char** argv, char** col_name)
+        {
+            std::string* out = static_cast<std::string*>(result);
+            *out = argv[0];
+            return 0;
+        };
+        std::string result;
+        details::exec_checked(db, pragma_statement, pragma_callback, &result);
+        return result;
+    };
+
+    TempDir temp_dir(Config().enable_logging());
+
+    // check default options
+    auto file_default = (temp_dir.path() / "db_default.sqlite").string();
+    sqlitemap sm_default(config().filename(file_default));
+
+    REQUIRE(get_db_option(sm_default.get_connection(), "PRAGMA journal_mode") == "delete");
+    REQUIRE(get_db_option(sm_default.get_connection(), "PRAGMA cache_size") == "-2000");
+    REQUIRE(get_db_option(sm_default.get_connection(), "PRAGMA temp_store") == "0");
+    REQUIRE(get_db_option(sm_default.get_connection(), "PRAGMA synchronous") == "2");
+
+    sm_default.set("k1", "v1");
+    sm_default.commit();
+    REQUIRE(sm_default.size() == 1);
+    REQUIRE(sm_default.get("k1") == "v1");
+
+    // check custom options
+    auto file_custom = (temp_dir.path() / "db_custom.sqlite").string();
+    sqlitemap sm_custom(
+        config()
+            .filename(file_custom)
+            .pragma("journal_mode", "WAL") // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
+            .pragma("cache_size", -4000)   // -4000 = 4000KiB, 4000 = number of pages
+            .pragma("temp_store = 2")      // 0 = DEFAULT, 1 = FILE, 2 = MEMORY
+            .pragma("PRAGMA synchronous = NORMAL")); // 0 = OFF, 1 = NORMAL, 2 = FULL
+
+    REQUIRE(get_db_option(sm_custom.get_connection(), "PRAGMA journal_mode") == "wal");
+    REQUIRE(get_db_option(sm_custom.get_connection(), "PRAGMA cache_size") == "-4000");
+    REQUIRE(get_db_option(sm_custom.get_connection(), "PRAGMA temp_store") == "2");
+    REQUIRE(get_db_option(sm_custom.get_connection(), "PRAGMA synchronous") == "1");
+
+    sm_custom.set("k1", "v1");
+    sm_custom.commit();
+    REQUIRE(sm_custom.size() == 1);
+    REQUIRE(sm_custom.get("k1") == "v1");
+}
