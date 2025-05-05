@@ -41,7 +41,7 @@ then
 else
     skip_tests="ON"
 fi
-echo "project skip tests: $build_tests"
+echo "project skip tests: $skip_tests"
 
 if [[ "${@#without_examples}" = "$@" ]]
 then
