@@ -8,7 +8,7 @@
 [![code coverage](https://bw-hro.github.io/sqlitemap/coverage-report/badge.svg)](https://bw-hro.github.io/sqlitemap/coverage-report)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/bw-hro/sqlitemap/main/LICENSE.txt)
 [![GitHub Releases](https://img.shields.io/github/release/bw-hro/sqlitemap.svg)](https://github.com/bw-hro/sqlitemap/releases)
-[![Vcpkg Version](https://img.shields.io/vcpkg/v/sqlitemap)](https://vcpkg.link/ports/sqlitemap)
+[![Vcpkg Version](https://img.shields.io/vcpkg/v/bw-sqlitemap)](https://vcpkg.link/ports/bw-sqlitemap)
 
 
 **sqlitemap** is a lightweight C++ wrapper around SQLite that provides a simple, map-like interface.  
@@ -25,15 +25,37 @@ The library is implemented as a **single-header** file, making integration easy 
 
 ## Installation
 
-- Just include the [sqlitemap.hpp](include/bw/sqlitemap/sqlitemap.hpp) file into your project
+- Just include the [sqlitemap.hpp](https://github.com/bw-hro/sqlitemap/releases/latest/download/sqlitemap.hpp) file into your project source files:
 - Make sure that [SQLite](https://sqlite.org) is available
-- vcpkg support will be added as soon as possible
+
+```c++
+#include <bw/sqlitemap/sqlitemap.hpp>
+```
+You can also use the *vcpkg* port `bw-sqlitemap`
+
+```sh
+vcpkg install bw-sqlitemap
+```
+
+or add dependency to *vcpkg.json* manifest file
+
+```json
+{
+  "name": "your-project",
+  "version-string": "1.0.1",
+  "dependencies": [
+    "bw-sqlitemap",
+    ...
+  ]
+}
+```
+
 
 ## Usage
 
 ### Write
 
-```cpp
+```c++
 #include <bw/sqlitemap/sqlitemap.hpp>
 
 int main()
@@ -75,7 +97,7 @@ int main()
 
 ### Read
 
-```cpp
+```c++
 #include <bw/sqlitemap/sqlitemap.hpp>
 
 int main()
@@ -112,7 +134,7 @@ int main()
 
 The **sqlitemap** object manages the lifecycle of the SQLite database connection. When the object is created, it automatically connects to the database. When the object goes out of scope and is destroyed, it ensures that the database connection is properly closed.
 
-```cpp
+```c++
 {
     bw::sqlitemap::sqlitemap db("example.sqlite");
     // The database connection is opened and ready for work
@@ -125,7 +147,7 @@ The **sqlitemap** object manages the lifecycle of the SQLite database connection
 
 ### Transactions
 
-**sqlitemap** provides transaction management to ensure data consistency and performance. By default, **sqlitemap** does not auto-commit changes for performance reasons, allowing you to group multiple operations into a single transaction. When autocommit is used, the begin of a multiple command spanning transaction must be statet explicitly.
+**sqlitemap** provides transaction management to ensure data consistency and performance. By default, **sqlitemap** does not auto-commit changes for performance reasons, allowing you to group multiple operations into a single transaction. When autocommit is used, the beginning of a multiple command spanning transaction must be stated explicitly.
 
 #### Explicit Transactions
 
@@ -136,7 +158,7 @@ You can explicitly control transactions using the `begin_transaction()`, `commit
 - **`rollback()`**: Discards all changes made during the current transaction.
 
 
-```cpp
+```c++
 #include <bw/sqlitemap/sqlitemap.hpp>
 
 int main()
@@ -176,7 +198,7 @@ int main()
 If you prefer not to manage transactions manually, you can enable auto-commit mode. In this mode, every write operation is immediately committed to the database until you explicitly state a new transaction.
 
 
-```cpp
+```c++
 #include <bw/sqlitemap/sqlitemap.hpp>
 
 int main()
@@ -202,7 +224,7 @@ int main()
 
 A database file can store multiple tables. The default table "unnamed" is used when no table name is specified.
 
-```cpp
+```c++
 #include <bw/sqlitemap/sqlitemap.hpp>
 
 int main()
@@ -248,7 +270,7 @@ int main()
 - **`operation_mode::w` (Write/Drop)**: Opens the database in read-write mode but drops the contents of the specified table before use.
 - **`operation_mode::n` (New)**: Creates a new database, erasing all existing tables.
 
-```cpp
+```c++
 #include <bw/sqlitemap/sqlitemap.hpp>
 
 int main()
@@ -265,7 +287,7 @@ In addition to the application-level `operation_mode`, the behavior of underlyin
 
 An example of configuring **sqlitemap** to optimize for high-concurrency workloads.
 
-```cpp
+```c++
 #include <bw/sqlitemap/sqlitemap.hpp>
 
 int main()
@@ -286,10 +308,10 @@ int main()
 
 ### Encoding/Decoding
 
-**sqlitemap** supports custom encoding and decoding mechanisms for both keys and values to handle complex data types. By default **sqlitemap** works with simple key-value pairs of `std::string`. However, you can define custom codecs to serialize and deserialize more complex types, such as structs or user-defined objects.
+**sqlitemap** supports custom encoding and decoding mechanisms for both keys and values to handle complex data types. By default, **sqlitemap** works with simple key-value pairs of `std::string`. However, you can define custom codecs to serialize and deserialize more complex types, such as structs or user-defined objects.
 
 
-```cpp
+```c++
 #include <bw/sqlitemap/sqlitemap.hpp>
 
 // point, feature definded in test/catch2/unit_tests/custom.hpp
@@ -319,7 +341,7 @@ int main()
 
 [sqlitemap_tiles.cpp](examples/sqlitemap_tiles.cpp) demonstrates how to use **sqlitemap** with custom data types stored as blobs. Please make sure to also inspect [sqlitemap_codecs_tests.cpp](test/catch2/unit_tests/sqlitemap_codecs_tests.cpp) were further details regarding encoding/decoding using codecs are covered.
 
-### Tests / Examples / Additional Documentation
+## Tests / Examples / Additional Documentation
 
 - **sqlitemap** is extensively covered by [unit tests](test), which also serve as documentation and usage examples.
 - Additionally, [sqlitemap_client](examples/sqlitemap_client.cpp) is a command-line wrapper around **sqlitemap** that demonstrates and covers its most important features and how to embed it into your own project. An executable can be found in the release section.
