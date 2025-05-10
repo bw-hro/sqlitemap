@@ -297,7 +297,7 @@ int main()
     sqlitemap sm(config()
         .filename("example.sqlite")
         .pragma("journal_mode", "WAL") // DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF
-        .pragma("cache_size", -64000)   // -64000 = 4000KiB, 64000 = number of pages
+        .pragma("cache_size", -64000)   // -64000 = 64000KiB, 64000 = number of pages
         .pragma("temp_store = 2")      // 0 = DEFAULT, 1 = FILE, 2 = MEMORY
         .pragma("PRAGMA synchronous = NORMAL")); // 0 = OFF, 1 = NORMAL, 2 = FULL
 
