@@ -2,7 +2,7 @@
 
 # sqlitemap — Persistent Map Backed by SQLite
 
-![Image](https://github.com/user-attachments/assets/73462d37-1b5f-4b71-9784-7704c6fef65b)
+![sqlitemap](sqlitemap.png)
 
 [![CI Ubuntu](https://github.com/bw-hro/sqlitemap/actions/workflows/ubuntu.yml/badge.svg?branch=main)](https://github.com/bw-hro/sqlitemap/actions/workflows/ubuntu.yml)
 [![CI Windows](https://github.com/bw-hro/sqlitemap/actions/workflows/windows.yml/badge.svg?branch=main)](https://github.com/bw-hro/sqlitemap/actions/workflows/windows.yml)
@@ -45,8 +45,7 @@ or add dependency to *vcpkg.json* manifest file
   "name": "your-project",
   "version-string": "1.0.1",
   "dependencies": [
-    "bw-sqlitemap",
-    ...
+    "bw-sqlitemap"
   ]
 }
 ```
