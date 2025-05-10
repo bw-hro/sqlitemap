@@ -2,6 +2,8 @@
 
 # sqlitemap — Persistent Map Backed by SQLite
 
+![Image](https://github.com/user-attachments/assets/73462d37-1b5f-4b71-9784-7704c6fef65b)
+
 [![CI Ubuntu](https://github.com/bw-hro/sqlitemap/actions/workflows/ubuntu.yml/badge.svg?branch=main)](https://github.com/bw-hro/sqlitemap/actions/workflows/ubuntu.yml)
 [![CI Windows](https://github.com/bw-hro/sqlitemap/actions/workflows/windows.yml/badge.svg?branch=main)](https://github.com/bw-hro/sqlitemap/actions/workflows/windows.yml)
 [![CI macOS](https://github.com/bw-hro/sqlitemap/actions/workflows/macos.yml/badge.svg?branch=main)](https://github.com/bw-hro/sqlitemap/actions/workflows/macos.yml)
@@ -9,7 +11,6 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/bw-hro/sqlitemap/main/LICENSE.txt)
 [![GitHub Releases](https://img.shields.io/github/release/bw-hro/sqlitemap.svg)](https://github.com/bw-hro/sqlitemap/releases)
 [![Vcpkg Version](https://img.shields.io/vcpkg/v/bw-sqlitemap)](https://vcpkg.link/ports/bw-sqlitemap)
-
 
 **sqlitemap** is a lightweight C++ wrapper around SQLite that provides a simple, map-like interface.  
 It’s designed to make working with key-value storage easy and convenient — similar to how [sqlitedict](https://github.com/piskvorky/sqlitedict) works in the Python world.
