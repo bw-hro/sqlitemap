@@ -35,7 +35,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-05-08 20:25:58</td>
+            <td class="headerValue">2025-05-10 18:04:29</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">97.6&nbsp;%</td>
@@ -134,20 +134,20 @@
 <span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           1 :         log(log_level::info, msg);</span></span>
 <span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           1 :     }</span></span>
 <span id="L76"><span class="lineNum">      76</span>              : </span>
-<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">        3686 :     void debug(const std::string&amp; msg) const</span></span>
+<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">        3646 :     void debug(const std::string&amp; msg) const</span></span>
 <span id="L78"><span class="lineNum">      78</span>              :     {</span>
-<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">        3686 :         log(log_level::debug, msg);</span></span>
-<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">        3686 :     }</span></span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">        3646 :         log(log_level::debug, msg);</span></span>
+<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">        3646 :     }</span></span>
 <span id="L81"><span class="lineNum">      81</span>              : </span>
 <span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">           1 :     void trace(const std::string&amp; msg) const</span></span>
 <span id="L83"><span class="lineNum">      83</span>              :     {</span>
 <span id="L84"><span class="lineNum">      84</span> <span class="tlaGNC">           1 :         log(log_level::trace, msg);</span></span>
 <span id="L85"><span class="lineNum">      85</span> <span class="tlaGNC">           1 :     }</span></span>
 <span id="L86"><span class="lineNum">      86</span>              : </span>
-<span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC">        3689 :     void log(log_level level, const std::string&amp; msg) const</span></span>
+<span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC">        3649 :     void log(log_level level, const std::string&amp; msg) const</span></span>
 <span id="L88"><span class="lineNum">      88</span>              :     {</span>
-<span id="L89"><span class="lineNum">      89</span> <span class="tlaGNC">        3689 :         if (level &lt; custom_log_level)</span></span>
-<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">        3681 :             return;</span></span>
+<span id="L89"><span class="lineNum">      89</span> <span class="tlaGNC">        3649 :         if (level &lt; custom_log_level)</span></span>
+<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">        3641 :             return;</span></span>
 <span id="L91"><span class="lineNum">      91</span>              : </span>
 <span id="L92"><span class="lineNum">      92</span> <span class="tlaGNC">           8 :         if (custom_log_impl)</span></span>
 <span id="L93"><span class="lineNum">      93</span> <span class="tlaGNC">           8 :             return custom_log_impl(level, msg);</span></span>
@@ -160,10 +160,10 @@
 <span id="L100"><span class="lineNum">     100</span> <span class="tlaGNC">           1 :         custom_log_impl = log_impl;</span></span>
 <span id="L101"><span class="lineNum">     101</span> <span class="tlaGNC">           1 :     }</span></span>
 <span id="L102"><span class="lineNum">     102</span>              : </span>
-<span id="L103"><span class="lineNum">     103</span> <span class="tlaGNC">         749 :     void set_level(log_level level)</span></span>
+<span id="L103"><span class="lineNum">     103</span> <span class="tlaGNC">         741 :     void set_level(log_level level)</span></span>
 <span id="L104"><span class="lineNum">     104</span>              :     {</span>
-<span id="L105"><span class="lineNum">     105</span> <span class="tlaGNC">         749 :         custom_log_level = level;</span></span>
-<span id="L106"><span class="lineNum">     106</span> <span class="tlaGNC">         749 :     }</span></span>
+<span id="L105"><span class="lineNum">     105</span> <span class="tlaGNC">         741 :         custom_log_level = level;</span></span>
+<span id="L106"><span class="lineNum">     106</span> <span class="tlaGNC">         741 :     }</span></span>
 <span id="L107"><span class="lineNum">     107</span>              : </span>
 <span id="L108"><span class="lineNum">     108</span>              :     log_level get_level() const</span>
 <span id="L109"><span class="lineNum">     109</span>              :     {</span>
@@ -248,10 +248,10 @@
 <span id="L188"><span class="lineNum">     188</span>              :     }</span>
 <span id="L189"><span class="lineNum">     189</span>              : }</span>
 <span id="L190"><span class="lineNum">     190</span>              : </span>
-<span id="L191"><span class="lineNum">     191</span> <span class="tlaGNC">     1427186 : inline void require_return_code(int rc, int rc_expected, const std::string&amp; message,</span></span>
+<span id="L191"><span class="lineNum">     191</span> <span class="tlaGNC">     1395162 : inline void require_return_code(int rc, int rc_expected, const std::string&amp; message,</span></span>
 <span id="L192"><span class="lineNum">     192</span>              :                                 sqlite3* db = nullptr)</span>
 <span id="L193"><span class="lineNum">     193</span>              : {</span>
-<span id="L194"><span class="lineNum">     194</span> <span class="tlaGNC">     1427186 :     if (rc != rc_expected)</span></span>
+<span id="L194"><span class="lineNum">     194</span> <span class="tlaGNC">     1395162 :     if (rc != rc_expected)</span></span>
 <span id="L195"><span class="lineNum">     195</span>              :     {</span>
 <span id="L196"><span class="lineNum">     196</span> <span class="tlaGNC">           6 :         auto msg = message;</span></span>
 <span id="L197"><span class="lineNum">     197</span> <span class="tlaGNC">           6 :         if (msg.empty())</span></span>
@@ -264,32 +264,32 @@
 <span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">           6 :         auto sqlite_err = db ? sqlite3_errmsg(db) : &quot;&quot;;</span></span>
 <span id="L205"><span class="lineNum">     205</span> <span class="tlaGNC">           6 :         throw sqlitemap_error(msg + (db ? &quot; - sqlite3_errmsg: &quot; : &quot;&quot;) + sqlite_err);</span></span>
 <span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">           6 :     }</span></span>
-<span id="L207"><span class="lineNum">     207</span> <span class="tlaGNC">     1427180 : }</span></span>
+<span id="L207"><span class="lineNum">     207</span> <span class="tlaGNC">     1395156 : }</span></span>
 <span id="L208"><span class="lineNum">     208</span>              : </span>
 <span id="L209"><span class="lineNum">     209</span>              : inline void require_return_code(int rc, int rc_expected, sqlite3* db = nullptr)</span>
 <span id="L210"><span class="lineNum">     210</span>              : {</span>
 <span id="L211"><span class="lineNum">     211</span>              :     require_return_code(rc, rc_expected, &quot;&quot;, db);</span>
 <span id="L212"><span class="lineNum">     212</span>              : }</span>
 <span id="L213"><span class="lineNum">     213</span>              : </span>
-<span id="L214"><span class="lineNum">     214</span> <span class="tlaGNC">     1071018 : inline void check_ok(int rc, const std::string&amp; message, sqlite3* db = nullptr)</span></span>
+<span id="L214"><span class="lineNum">     214</span> <span class="tlaGNC">     1046994 : inline void check_ok(int rc, const std::string&amp; message, sqlite3* db = nullptr)</span></span>
 <span id="L215"><span class="lineNum">     215</span>              : {</span>
-<span id="L216"><span class="lineNum">     216</span> <span class="tlaGNC">     1071018 :     require_return_code(rc, SQLITE_OK, message, db);</span></span>
-<span id="L217"><span class="lineNum">     217</span> <span class="tlaGNC">     1071014 : }</span></span>
+<span id="L216"><span class="lineNum">     216</span> <span class="tlaGNC">     1046994 :     require_return_code(rc, SQLITE_OK, message, db);</span></span>
+<span id="L217"><span class="lineNum">     217</span> <span class="tlaGNC">     1046990 : }</span></span>
 <span id="L218"><span class="lineNum">     218</span>              : </span>
 <span id="L219"><span class="lineNum">     219</span> <span class="tlaGNC">           2 : inline void check_ok(int rc, sqlite3* db = nullptr)</span></span>
 <span id="L220"><span class="lineNum">     220</span>              : {</span>
 <span id="L221"><span class="lineNum">     221</span> <span class="tlaGNC">           3 :     check_ok(rc, &quot;&quot;, db);</span></span>
 <span id="L222"><span class="lineNum">     222</span> <span class="tlaGNC">           1 : }</span></span>
 <span id="L223"><span class="lineNum">     223</span>              : </span>
-<span id="L224"><span class="lineNum">     224</span> <span class="tlaGNC">      355948 : inline void check_done(int rc, const std::string&amp; message, sqlite3* db = nullptr)</span></span>
+<span id="L224"><span class="lineNum">     224</span> <span class="tlaGNC">      347948 : inline void check_done(int rc, const std::string&amp; message, sqlite3* db = nullptr)</span></span>
 <span id="L225"><span class="lineNum">     225</span>              : {</span>
-<span id="L226"><span class="lineNum">     226</span> <span class="tlaGNC">      355948 :     require_return_code(rc, SQLITE_DONE, message, db);</span></span>
-<span id="L227"><span class="lineNum">     227</span> <span class="tlaGNC">      355946 : }</span></span>
+<span id="L226"><span class="lineNum">     226</span> <span class="tlaGNC">      347948 :     require_return_code(rc, SQLITE_DONE, message, db);</span></span>
+<span id="L227"><span class="lineNum">     227</span> <span class="tlaGNC">      347946 : }</span></span>
 <span id="L228"><span class="lineNum">     228</span>              : </span>
-<span id="L229"><span class="lineNum">     229</span> <span class="tlaGNC">      355947 : inline void check_done(int rc, sqlite3* db = nullptr)</span></span>
+<span id="L229"><span class="lineNum">     229</span> <span class="tlaGNC">      347947 : inline void check_done(int rc, sqlite3* db = nullptr)</span></span>
 <span id="L230"><span class="lineNum">     230</span>              : {</span>
-<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">      355948 :     check_done(rc, &quot;&quot;, db);</span></span>
-<span id="L232"><span class="lineNum">     232</span> <span class="tlaGNC">      355946 : }</span></span>
+<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">      347948 :     check_done(rc, &quot;&quot;, db);</span></span>
+<span id="L232"><span class="lineNum">     232</span> <span class="tlaGNC">      347946 : }</span></span>
 <span id="L233"><span class="lineNum">     233</span>              : </span>
 <span id="L234"><span class="lineNum">     234</span>              : template &lt;typename T&gt; constexpr bool has_native_sqlite_support()</span>
 <span id="L235"><span class="lineNum">     235</span>              : {</span>
@@ -345,11 +345,11 @@
 <span id="L285"><span class="lineNum">     285</span>              :     }</span>
 <span id="L286"><span class="lineNum">     286</span>              : }</span>
 <span id="L287"><span class="lineNum">     287</span>              : </span>
-<span id="L288"><span class="lineNum">     288</span> <span class="tlaGNC">      712309 : template &lt;typename T&gt; int bind_param(sqlite3_stmt* stmt, int index, const T&amp; value)</span></span>
+<span id="L288"><span class="lineNum">     288</span> <span class="tlaGNC">      696309 : template &lt;typename T&gt; int bind_param(sqlite3_stmt* stmt, int index, const T&amp; value)</span></span>
 <span id="L289"><span class="lineNum">     289</span>              : {</span>
 <span id="L290"><span class="lineNum">     290</span>              :     if constexpr (std::is_same_v&lt;T, std::string&gt;)</span>
 <span id="L291"><span class="lineNum">     291</span>              :     {</span>
-<span id="L292"><span class="lineNum">     292</span> <span class="tlaGNC">      712197 :         return sqlite3_bind_text(stmt, index, value.c_str(), -1, SQLITE_TRANSIENT);</span></span>
+<span id="L292"><span class="lineNum">     292</span> <span class="tlaGNC">      696197 :         return sqlite3_bind_text(stmt, index, value.c_str(), -1, SQLITE_TRANSIENT);</span></span>
 <span id="L293"><span class="lineNum">     293</span>              :     }</span>
 <span id="L294"><span class="lineNum">     294</span>              :     else if constexpr (std::is_integral_v&lt;T&gt;)</span>
 <span id="L295"><span class="lineNum">     295</span>              :     {</span>
@@ -385,28 +385,28 @@
 <span id="L325"><span class="lineNum">     325</span>              : }</span>
 <span id="L326"><span class="lineNum">     326</span>              : </span>
 <span id="L327"><span class="lineNum">     327</span>              : template &lt;typename T&gt;</span>
-<span id="L328"><span class="lineNum">     328</span> <span class="tlaGNC">      712309 : int bind_param_checked(sqlite3_stmt* stmt, int index, const T&amp; value,</span></span>
+<span id="L328"><span class="lineNum">     328</span> <span class="tlaGNC">      696309 : int bind_param_checked(sqlite3_stmt* stmt, int index, const T&amp; value,</span></span>
 <span id="L329"><span class="lineNum">     329</span>              :                        const std::string&amp; message = &quot;&quot;, sqlite3* db = nullptr)</span>
 <span id="L330"><span class="lineNum">     330</span>              : {</span>
-<span id="L331"><span class="lineNum">     331</span> <span class="tlaGNC">      712309 :     int rc = bind_param(stmt, index, value);</span></span>
-<span id="L332"><span class="lineNum">     332</span> <span class="tlaGNC">      712309 :     check_ok(rc, message, db);</span></span>
-<span id="L333"><span class="lineNum">     333</span> <span class="tlaGNC">      712309 :     return rc;</span></span>
+<span id="L331"><span class="lineNum">     331</span> <span class="tlaGNC">      696309 :     int rc = bind_param(stmt, index, value);</span></span>
+<span id="L332"><span class="lineNum">     332</span> <span class="tlaGNC">      696309 :     check_ok(rc, message, db);</span></span>
+<span id="L333"><span class="lineNum">     333</span> <span class="tlaGNC">      696309 :     return rc;</span></span>
 <span id="L334"><span class="lineNum">     334</span>              : }</span>
 <span id="L335"><span class="lineNum">     335</span>              : </span>
-<span id="L336"><span class="lineNum">     336</span> <span class="tlaGNC">      356485 : inline int prepare_checked(sqlite3* db, const std::string&amp; sql, sqlite3_stmt** stmt)</span></span>
+<span id="L336"><span class="lineNum">     336</span> <span class="tlaGNC">      348485 : inline int prepare_checked(sqlite3* db, const std::string&amp; sql, sqlite3_stmt** stmt)</span></span>
 <span id="L337"><span class="lineNum">     337</span>              : {</span>
-<span id="L338"><span class="lineNum">     338</span> <span class="tlaGNC">      356485 :     int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, stmt, nullptr);</span></span>
-<span id="L339"><span class="lineNum">     339</span> <span class="tlaGNC">      356485 :     check_ok(rc, &quot;Failed to prepare statement&quot;, db);</span></span>
-<span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC">      356485 :     return rc;</span></span>
+<span id="L338"><span class="lineNum">     338</span> <span class="tlaGNC">      348485 :     int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, stmt, nullptr);</span></span>
+<span id="L339"><span class="lineNum">     339</span> <span class="tlaGNC">      348485 :     check_ok(rc, &quot;Failed to prepare statement&quot;, db);</span></span>
+<span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC">      348485 :     return rc;</span></span>
 <span id="L341"><span class="lineNum">     341</span>              : }</span>
 <span id="L342"><span class="lineNum">     342</span>              : </span>
-<span id="L343"><span class="lineNum">     343</span> <span class="tlaGNC">        1467 : inline int exec_checked(sqlite3* db, const std::string&amp; sql,</span></span>
+<span id="L343"><span class="lineNum">     343</span> <span class="tlaGNC">        1451 : inline int exec_checked(sqlite3* db, const std::string&amp; sql,</span></span>
 <span id="L344"><span class="lineNum">     344</span>              :                         int (*callback)(void*, int, char**, char**) = nullptr,</span>
 <span id="L345"><span class="lineNum">     345</span>              :                         void* first_arg_to_callback = nullptr)</span>
 <span id="L346"><span class="lineNum">     346</span>              : {</span>
-<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">        1467 :     int rc = sqlite3_exec(db, sql.c_str(), callback, first_arg_to_callback, nullptr);</span></span>
-<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">        1467 :     check_ok(rc, &quot;Failed to execute statement&quot;, db);</span></span>
-<span id="L349"><span class="lineNum">     349</span> <span class="tlaGNC">        1467 :     return rc;</span></span>
+<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">        1451 :     int rc = sqlite3_exec(db, sql.c_str(), callback, first_arg_to_callback, nullptr);</span></span>
+<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">        1451 :     check_ok(rc, &quot;Failed to execute statement&quot;, db);</span></span>
+<span id="L349"><span class="lineNum">     349</span> <span class="tlaGNC">        1451 :     return rc;</span></span>
 <span id="L350"><span class="lineNum">     350</span>              : }</span>
 <span id="L351"><span class="lineNum">     351</span>              : </span>
 <span id="L352"><span class="lineNum">     352</span>              : // Base template for function traits</span>
@@ -439,23 +439,23 @@
 <span id="L379"><span class="lineNum">     379</span>              : };</span>
 <span id="L380"><span class="lineNum">     380</span>              : </span>
 <span id="L381"><span class="lineNum">     381</span>              : // Generates a unique name for the temporary sqlite database.</span>
-<span id="L382"><span class="lineNum">     382</span> <span class="tlaGNC">         681 : static std::string generate_temp_filename()</span></span>
+<span id="L382"><span class="lineNum">     382</span> <span class="tlaGNC">         673 : static std::string generate_temp_filename()</span></span>
 <span id="L383"><span class="lineNum">     383</span>              : {</span>
 <span id="L384"><span class="lineNum">     384</span>              :     using namespace std::chrono;</span>
 <span id="L385"><span class="lineNum">     385</span>              : </span>
-<span id="L386"><span class="lineNum">     386</span> <span class="tlaGNC">         681 :     std::random_device rd;</span></span>
-<span id="L387"><span class="lineNum">     387</span> <span class="tlaGNC">         681 :     std::mt19937 gen(rd());</span></span>
-<span id="L388"><span class="lineNum">     388</span> <span class="tlaGNC">         681 :     std::uniform_int_distribution&lt;&gt; dist(10000, 99999);</span></span>
-<span id="L389"><span class="lineNum">     389</span> <span class="tlaGNC">         681 :     int random_number = dist(gen);</span></span>
+<span id="L386"><span class="lineNum">     386</span> <span class="tlaGNC">         673 :     std::random_device rd;</span></span>
+<span id="L387"><span class="lineNum">     387</span> <span class="tlaGNC">         673 :     std::mt19937 gen(rd());</span></span>
+<span id="L388"><span class="lineNum">     388</span> <span class="tlaGNC">         673 :     std::uniform_int_distribution&lt;&gt; dist(10000, 99999);</span></span>
+<span id="L389"><span class="lineNum">     389</span> <span class="tlaGNC">         673 :     int random_number = dist(gen);</span></span>
 <span id="L390"><span class="lineNum">     390</span>              : </span>
-<span id="L391"><span class="lineNum">     391</span> <span class="tlaGNC">         681 :     auto now = system_clock::now();</span></span>
-<span id="L392"><span class="lineNum">     392</span> <span class="tlaGNC">         681 :     auto timestamp = duration_cast&lt;milliseconds&gt;(now.time_since_epoch()).count();</span></span>
+<span id="L391"><span class="lineNum">     391</span> <span class="tlaGNC">         673 :     auto now = system_clock::now();</span></span>
+<span id="L392"><span class="lineNum">     392</span> <span class="tlaGNC">         673 :     auto timestamp = duration_cast&lt;milliseconds&gt;(now.time_since_epoch()).count();</span></span>
 <span id="L393"><span class="lineNum">     393</span>              : </span>
-<span id="L394"><span class="lineNum">     394</span> <span class="tlaGNC">         681 :     std::string prefix = &quot;sqlitemap&quot;;</span></span>
-<span id="L395"><span class="lineNum">     395</span> <span class="tlaGNC">         681 :     std::string ts = std::to_string(timestamp);</span></span>
-<span id="L396"><span class="lineNum">     396</span> <span class="tlaGNC">         681 :     std::string rn = std::to_string(random_number);</span></span>
-<span id="L397"><span class="lineNum">     397</span> <span class="tlaGNC">        1362 :     return prefix + &quot;_&quot; + ts + &quot;_&quot; + rn;</span></span>
-<span id="L398"><span class="lineNum">     398</span> <span class="tlaGNC">         681 : }</span></span>
+<span id="L394"><span class="lineNum">     394</span> <span class="tlaGNC">         673 :     std::string prefix = &quot;sqlitemap&quot;;</span></span>
+<span id="L395"><span class="lineNum">     395</span> <span class="tlaGNC">         673 :     std::string ts = std::to_string(timestamp);</span></span>
+<span id="L396"><span class="lineNum">     396</span> <span class="tlaGNC">         673 :     std::string rn = std::to_string(random_number);</span></span>
+<span id="L397"><span class="lineNum">     397</span> <span class="tlaGNC">        1346 :     return prefix + &quot;_&quot; + ts + &quot;_&quot; + rn;</span></span>
+<span id="L398"><span class="lineNum">     398</span> <span class="tlaGNC">         673 : }</span></span>
 <span id="L399"><span class="lineNum">     399</span>              : </span>
 <span id="L400"><span class="lineNum">     400</span>              : } // namespace details</span>
 <span id="L401"><span class="lineNum">     401</span>              : </span>
@@ -470,7 +470,7 @@
 <span id="L410"><span class="lineNum">     410</span>              :     BLOB</span>
 <span id="L411"><span class="lineNum">     411</span>              : };</span>
 <span id="L412"><span class="lineNum">     412</span>              : </span>
-<span id="L413"><span class="lineNum">     413</span> <span class="tlaGNC">        1495 : template &lt;typename T&gt; constexpr sqlite_storage_class sqlite_storage_class_from_type()</span></span>
+<span id="L413"><span class="lineNum">     413</span> <span class="tlaGNC">        1479 : template &lt;typename T&gt; constexpr sqlite_storage_class sqlite_storage_class_from_type()</span></span>
 <span id="L414"><span class="lineNum">     414</span>              : {</span>
 <span id="L415"><span class="lineNum">     415</span>              :     if constexpr (std::is_integral_v&lt;T&gt;)</span>
 <span id="L416"><span class="lineNum">     416</span>              :     {</span>
@@ -482,7 +482,7 @@
 <span id="L422"><span class="lineNum">     422</span>              :     }</span>
 <span id="L423"><span class="lineNum">     423</span>              :     else if constexpr (std::is_same_v&lt;T, std::string&gt;)</span>
 <span id="L424"><span class="lineNum">     424</span>              :     {</span>
-<span id="L425"><span class="lineNum">     425</span> <span class="tlaGNC">        1449 :         return sqlite_storage_class::TEXT;</span></span>
+<span id="L425"><span class="lineNum">     425</span> <span class="tlaGNC">        1433 :         return sqlite_storage_class::TEXT;</span></span>
 <span id="L426"><span class="lineNum">     426</span>              :     }</span>
 <span id="L427"><span class="lineNum">     427</span>              :     else if constexpr (std::is_same_v&lt;T, const char*&gt;)</span>
 <span id="L428"><span class="lineNum">     428</span>              :     {</span>
@@ -494,16 +494,16 @@
 <span id="L434"><span class="lineNum">     434</span>              :     }</span>
 <span id="L435"><span class="lineNum">     435</span>              : }</span>
 <span id="L436"><span class="lineNum">     436</span>              : </span>
-<span id="L437"><span class="lineNum">     437</span> <span class="tlaGNC">        1492 : inline std::string to_string(sqlite_storage_class sc)</span></span>
+<span id="L437"><span class="lineNum">     437</span> <span class="tlaGNC">        1476 : inline std::string to_string(sqlite_storage_class sc)</span></span>
 <span id="L438"><span class="lineNum">     438</span>              : {</span>
-<span id="L439"><span class="lineNum">     439</span> <span class="tlaGNC">        1492 :     switch (sc)</span></span>
+<span id="L439"><span class="lineNum">     439</span> <span class="tlaGNC">        1476 :     switch (sc)</span></span>
 <span id="L440"><span class="lineNum">     440</span>              :     {</span>
 <span id="L441"><span class="lineNum">     441</span> <span class="tlaGNC">          27 :     case sqlite_storage_class::INTEGER:</span></span>
 <span id="L442"><span class="lineNum">     442</span> <span class="tlaGNC">          54 :         return &quot;INTEGER&quot;;</span></span>
 <span id="L443"><span class="lineNum">     443</span> <span class="tlaGNC">          12 :     case sqlite_storage_class::REAL:</span></span>
 <span id="L444"><span class="lineNum">     444</span> <span class="tlaGNC">          24 :         return &quot;REAL&quot;;</span></span>
-<span id="L445"><span class="lineNum">     445</span> <span class="tlaGNC">        1449 :     case sqlite_storage_class::TEXT:</span></span>
-<span id="L446"><span class="lineNum">     446</span> <span class="tlaGNC">        2898 :         return &quot;TEXT&quot;;</span></span>
+<span id="L445"><span class="lineNum">     445</span> <span class="tlaGNC">        1433 :     case sqlite_storage_class::TEXT:</span></span>
+<span id="L446"><span class="lineNum">     446</span> <span class="tlaGNC">        2866 :         return &quot;TEXT&quot;;</span></span>
 <span id="L447"><span class="lineNum">     447</span> <span class="tlaGNC">           4 :     case sqlite_storage_class::BLOB:</span></span>
 <span id="L448"><span class="lineNum">     448</span> <span class="tlaGNC">           8 :         return &quot;BLOB&quot;;</span></span>
 <span id="L449"><span class="lineNum">     449</span> <span class="tlaUNC tlaBgUNC">           0 :     default:</span></span>
@@ -512,9 +512,9 @@
 <span id="L452"><span class="lineNum">     452</span>              : }</span>
 <span id="L453"><span class="lineNum">     453</span>              : </span>
 <span id="L454"><span class="lineNum">     454</span>              : // identity function, just returns the input</span>
-<span id="L455"><span class="lineNum">     455</span> <span class="tlaGNC tlaBgGNC">      712903 : template &lt;typename T&gt; T identity(const T&amp; input)</span></span>
+<span id="L455"><span class="lineNum">     455</span> <span class="tlaGNC tlaBgGNC">      696903 : template &lt;typename T&gt; T identity(const T&amp; input)</span></span>
 <span id="L456"><span class="lineNum">     456</span>              : {</span>
-<span id="L457"><span class="lineNum">     457</span> <span class="tlaGNC">      712903 :     return input;</span></span>
+<span id="L457"><span class="lineNum">     457</span> <span class="tlaGNC">      696903 :     return input;</span></span>
 <span id="L458"><span class="lineNum">     458</span>              : }</span>
 <span id="L459"><span class="lineNum">     459</span>              : </span>
 <span id="L460"><span class="lineNum">     460</span>              : /**</span>
@@ -650,16 +650,16 @@
 <span id="L590"><span class="lineNum">     590</span>              : </span>
 <span id="L591"><span class="lineNum">     591</span>              : template &lt;typename KC, typename VC&gt; struct codec_pair</span>
 <span id="L592"><span class="lineNum">     592</span>              : {</span>
-<span id="L593"><span class="lineNum">     593</span> <span class="tlaGNC">         749 :     codec_pair(KC k, VC v)</span></span>
-<span id="L594"><span class="lineNum">     594</span> <span class="tlaGNC">         749 :         : key_codec(k)</span></span>
-<span id="L595"><span class="lineNum">     595</span> <span class="tlaGNC">         749 :         , value_codec(v)</span></span>
+<span id="L593"><span class="lineNum">     593</span> <span class="tlaGNC">         741 :     codec_pair(KC k, VC v)</span></span>
+<span id="L594"><span class="lineNum">     594</span> <span class="tlaGNC">         741 :         : key_codec(k)</span></span>
+<span id="L595"><span class="lineNum">     595</span> <span class="tlaGNC">         741 :         , value_codec(v)</span></span>
 <span id="L596"><span class="lineNum">     596</span>              :     {</span>
 <span id="L597"><span class="lineNum">     597</span>              :         static_assert(is_key_codec&lt;std::decay_t&lt;KC&gt;&gt;::value,</span>
 <span id="L598"><span class="lineNum">     598</span>              :                       &quot;KC must be a specialization of key_codec&lt;IN_T, OUT_T&gt;&quot;);</span>
 <span id="L599"><span class="lineNum">     599</span>              : </span>
 <span id="L600"><span class="lineNum">     600</span>              :         static_assert(is_value_codec&lt;std::decay_t&lt;VC&gt;&gt;::value,</span>
 <span id="L601"><span class="lineNum">     601</span>              :                       &quot;VC must be a specialization of value_codec&lt;IN_T, OUT_T&gt;&quot;);</span>
-<span id="L602"><span class="lineNum">     602</span> <span class="tlaGNC">         749 :     }</span></span>
+<span id="L602"><span class="lineNum">     602</span> <span class="tlaGNC">         741 :     }</span></span>
 <span id="L603"><span class="lineNum">     603</span>              : </span>
 <span id="L604"><span class="lineNum">     604</span>              :     using key_in_type = typename KC::in_type;</span>
 <span id="L605"><span class="lineNum">     605</span>              :     using key_out_type = typename KC::out_type;</span>
@@ -745,27 +745,27 @@
 <span id="L685"><span class="lineNum">     685</span>              : template &lt;typename CODEC_PAIR&gt; class configuration</span>
 <span id="L686"><span class="lineNum">     686</span>              : {</span>
 <span id="L687"><span class="lineNum">     687</span>              :   public:</span>
-<span id="L688"><span class="lineNum">     688</span> <span class="tlaGNC">         749 :     configuration(CODEC_PAIR codecs)</span></span>
-<span id="L689"><span class="lineNum">     689</span> <span class="tlaGNC">        3745 :         : _codecs(codecs)</span></span>
+<span id="L688"><span class="lineNum">     688</span> <span class="tlaGNC">         741 :     configuration(CODEC_PAIR codecs)</span></span>
+<span id="L689"><span class="lineNum">     689</span> <span class="tlaGNC">        3705 :         : _codecs(codecs)</span></span>
 <span id="L690"><span class="lineNum">     690</span>              :     {</span>
 <span id="L691"><span class="lineNum">     691</span>              :         static_assert(codecs::is_codec_pair&lt;std::decay_t&lt;CODEC_PAIR&gt;&gt;::value,</span>
 <span id="L692"><span class="lineNum">     692</span>              :                       &quot;CODEC_PAIR must be a specialization of codec_pair&lt;KC, VC&gt;&quot;);</span>
-<span id="L693"><span class="lineNum">     693</span> <span class="tlaGNC">         749 :     }</span></span>
+<span id="L693"><span class="lineNum">     693</span> <span class="tlaGNC">         741 :     }</span></span>
 <span id="L694"><span class="lineNum">     694</span>              : </span>
-<span id="L695"><span class="lineNum">     695</span> <span class="tlaGNC">      712976 :     CODEC_PAIR codecs() const</span></span>
+<span id="L695"><span class="lineNum">     695</span> <span class="tlaGNC">      696976 :     CODEC_PAIR codecs() const</span></span>
 <span id="L696"><span class="lineNum">     696</span>              :     {</span>
-<span id="L697"><span class="lineNum">     697</span> <span class="tlaGNC">      712976 :         return _codecs;</span></span>
+<span id="L697"><span class="lineNum">     697</span> <span class="tlaGNC">      696976 :         return _codecs;</span></span>
 <span id="L698"><span class="lineNum">     698</span>              :     }</span>
 <span id="L699"><span class="lineNum">     699</span>              : </span>
-<span id="L700"><span class="lineNum">     700</span> <span class="tlaGNC">         803 :     configuration&amp; filename(std::string filename)</span></span>
+<span id="L700"><span class="lineNum">     700</span> <span class="tlaGNC">         795 :     configuration&amp; filename(std::string filename)</span></span>
 <span id="L701"><span class="lineNum">     701</span>              :     {</span>
-<span id="L702"><span class="lineNum">     702</span> <span class="tlaGNC">         803 :         _filename = filename;</span></span>
-<span id="L703"><span class="lineNum">     703</span> <span class="tlaGNC">         803 :         return *this;</span></span>
+<span id="L702"><span class="lineNum">     702</span> <span class="tlaGNC">         795 :         _filename = filename;</span></span>
+<span id="L703"><span class="lineNum">     703</span> <span class="tlaGNC">         795 :         return *this;</span></span>
 <span id="L704"><span class="lineNum">     704</span>              :     }</span>
 <span id="L705"><span class="lineNum">     705</span>              : </span>
-<span id="L706"><span class="lineNum">     706</span> <span class="tlaGNC">        5924 :     std::string filename() const</span></span>
+<span id="L706"><span class="lineNum">     706</span> <span class="tlaGNC">        5860 :     std::string filename() const</span></span>
 <span id="L707"><span class="lineNum">     707</span>              :     {</span>
-<span id="L708"><span class="lineNum">     708</span> <span class="tlaGNC">        5924 :         return _filename;</span></span>
+<span id="L708"><span class="lineNum">     708</span> <span class="tlaGNC">        5860 :         return _filename;</span></span>
 <span id="L709"><span class="lineNum">     709</span>              :     }</span>
 <span id="L710"><span class="lineNum">     710</span>              : </span>
 <span id="L711"><span class="lineNum">     711</span> <span class="tlaGNC">          63 :     configuration&amp; table(std::string table)</span></span>
@@ -774,9 +774,9 @@
 <span id="L714"><span class="lineNum">     714</span> <span class="tlaGNC">          63 :         return *this;</span></span>
 <span id="L715"><span class="lineNum">     715</span>              :     }</span>
 <span id="L716"><span class="lineNum">     716</span>              : </span>
-<span id="L717"><span class="lineNum">     717</span> <span class="tlaGNC">      359436 :     std::string table() const</span></span>
+<span id="L717"><span class="lineNum">     717</span> <span class="tlaGNC">      351404 :     std::string table() const</span></span>
 <span id="L718"><span class="lineNum">     718</span>              :     {</span>
-<span id="L719"><span class="lineNum">     719</span> <span class="tlaGNC">      359436 :         return _table;</span></span>
+<span id="L719"><span class="lineNum">     719</span> <span class="tlaGNC">      351404 :         return _table;</span></span>
 <span id="L720"><span class="lineNum">     720</span>              :     }</span>
 <span id="L721"><span class="lineNum">     721</span>              : </span>
 <span id="L722"><span class="lineNum">     722</span> <span class="tlaGNC">          92 :     configuration&amp; mode(operation_mode mode)</span></span>
@@ -785,20 +785,20 @@
 <span id="L725"><span class="lineNum">     725</span> <span class="tlaGNC">          92 :         return *this;</span></span>
 <span id="L726"><span class="lineNum">     726</span>              :     }</span>
 <span id="L727"><span class="lineNum">     727</span>              : </span>
-<span id="L728"><span class="lineNum">     728</span> <span class="tlaGNC">      359050 :     operation_mode mode() const</span></span>
+<span id="L728"><span class="lineNum">     728</span> <span class="tlaGNC">      351018 :     operation_mode mode() const</span></span>
 <span id="L729"><span class="lineNum">     729</span>              :     {</span>
-<span id="L730"><span class="lineNum">     730</span> <span class="tlaGNC">      359050 :         return _mode;</span></span>
+<span id="L730"><span class="lineNum">     730</span> <span class="tlaGNC">      351018 :         return _mode;</span></span>
 <span id="L731"><span class="lineNum">     731</span>              :     }</span>
 <span id="L732"><span class="lineNum">     732</span>              : </span>
-<span id="L733"><span class="lineNum">     733</span> <span class="tlaGNC">         667 :     configuration&amp; auto_commit(bool auto_commit)</span></span>
+<span id="L733"><span class="lineNum">     733</span> <span class="tlaGNC">         659 :     configuration&amp; auto_commit(bool auto_commit)</span></span>
 <span id="L734"><span class="lineNum">     734</span>              :     {</span>
-<span id="L735"><span class="lineNum">     735</span> <span class="tlaGNC">         667 :         _auto_commit = auto_commit;</span></span>
-<span id="L736"><span class="lineNum">     736</span> <span class="tlaGNC">         667 :         return *this;</span></span>
+<span id="L735"><span class="lineNum">     735</span> <span class="tlaGNC">         659 :         _auto_commit = auto_commit;</span></span>
+<span id="L736"><span class="lineNum">     736</span> <span class="tlaGNC">         659 :         return *this;</span></span>
 <span id="L737"><span class="lineNum">     737</span>              :     }</span>
 <span id="L738"><span class="lineNum">     738</span>              : </span>
-<span id="L739"><span class="lineNum">     739</span> <span class="tlaGNC">      356696 :     bool auto_commit() const</span></span>
+<span id="L739"><span class="lineNum">     739</span> <span class="tlaGNC">      348688 :     bool auto_commit() const</span></span>
 <span id="L740"><span class="lineNum">     740</span>              :     {</span>
-<span id="L741"><span class="lineNum">     741</span> <span class="tlaGNC">      356696 :         return _auto_commit;</span></span>
+<span id="L741"><span class="lineNum">     741</span> <span class="tlaGNC">      348688 :         return _auto_commit;</span></span>
 <span id="L742"><span class="lineNum">     742</span>              :     }</span>
 <span id="L743"><span class="lineNum">     743</span>              : </span>
 <span id="L744"><span class="lineNum">     744</span> <span class="tlaGNC">          59 :     configuration&amp; log_level(log_level log_level)</span></span>
@@ -807,9 +807,9 @@
 <span id="L747"><span class="lineNum">     747</span> <span class="tlaGNC">          59 :         return *this;</span></span>
 <span id="L748"><span class="lineNum">     748</span>              :     }</span>
 <span id="L749"><span class="lineNum">     749</span>              : </span>
-<span id="L750"><span class="lineNum">     750</span> <span class="tlaGNC">         749 :     bw::sqlitemap::log_level log_level() const</span></span>
+<span id="L750"><span class="lineNum">     750</span> <span class="tlaGNC">         741 :     bw::sqlitemap::log_level log_level() const</span></span>
 <span id="L751"><span class="lineNum">     751</span>              :     {</span>
-<span id="L752"><span class="lineNum">     752</span> <span class="tlaGNC">         749 :         return _log_level;</span></span>
+<span id="L752"><span class="lineNum">     752</span> <span class="tlaGNC">         741 :         return _log_level;</span></span>
 <span id="L753"><span class="lineNum">     753</span>              :     }</span>
 <span id="L754"><span class="lineNum">     754</span>              : </span>
 <span id="L755"><span class="lineNum">     755</span> <span class="tlaGNC">           1 :     configuration&amp; log_impl(logger::log_function log_impl)</span></span>
@@ -818,9 +818,9 @@
 <span id="L758"><span class="lineNum">     758</span> <span class="tlaGNC">           1 :         return *this;</span></span>
 <span id="L759"><span class="lineNum">     759</span>              :     }</span>
 <span id="L760"><span class="lineNum">     760</span>              : </span>
-<span id="L761"><span class="lineNum">     761</span> <span class="tlaGNC">         750 :     logger::log_function log_impl() const</span></span>
+<span id="L761"><span class="lineNum">     761</span> <span class="tlaGNC">         742 :     logger::log_function log_impl() const</span></span>
 <span id="L762"><span class="lineNum">     762</span>              :     {</span>
-<span id="L763"><span class="lineNum">     763</span> <span class="tlaGNC">         750 :         return _log_impl;</span></span>
+<span id="L763"><span class="lineNum">     763</span> <span class="tlaGNC">         742 :         return _log_impl;</span></span>
 <span id="L764"><span class="lineNum">     764</span>              :     }</span>
 <span id="L765"><span class="lineNum">     765</span>              : </span>
 <span id="L766"><span class="lineNum">     766</span> <span class="tlaGNC">           1 :     configuration&amp; pragma(const std::string&amp; flag, int value)</span></span>
@@ -848,9 +848,9 @@
 <span id="L788"><span class="lineNum">     788</span> <span class="tlaGNC">           3 :         return *this;</span></span>
 <span id="L789"><span class="lineNum">     789</span> <span class="tlaGNC">           4 :     }</span></span>
 <span id="L790"><span class="lineNum">     790</span>              : </span>
-<span id="L791"><span class="lineNum">     791</span> <span class="tlaGNC">         744 :     const std::vector&lt;std::string&gt;&amp; pragmas() const</span></span>
+<span id="L791"><span class="lineNum">     791</span> <span class="tlaGNC">         736 :     const std::vector&lt;std::string&gt;&amp; pragmas() const</span></span>
 <span id="L792"><span class="lineNum">     792</span>              :     {</span>
-<span id="L793"><span class="lineNum">     793</span> <span class="tlaGNC">         744 :         return _pragma_statements;</span></span>
+<span id="L793"><span class="lineNum">     793</span> <span class="tlaGNC">         736 :         return _pragma_statements;</span></span>
 <span id="L794"><span class="lineNum">     794</span>              :     }</span>
 <span id="L795"><span class="lineNum">     795</span>              : </span>
 <span id="L796"><span class="lineNum">     796</span>              :   private:</span>
@@ -864,11 +864,11 @@
 <span id="L804"><span class="lineNum">     804</span>              :     std::vector&lt;std::string&gt; _pragma_statements;</span>
 <span id="L805"><span class="lineNum">     805</span>              : };</span>
 <span id="L806"><span class="lineNum">     806</span>              : </span>
-<span id="L807"><span class="lineNum">     807</span> <span class="tlaGNC">         749 : template &lt;typename CODEC_PAIR&gt; auto config(CODEC_PAIR codec)</span></span>
+<span id="L807"><span class="lineNum">     807</span> <span class="tlaGNC">         741 : template &lt;typename CODEC_PAIR&gt; auto config(CODEC_PAIR codec)</span></span>
 <span id="L808"><span class="lineNum">     808</span>              : {</span>
 <span id="L809"><span class="lineNum">     809</span>              :     if constexpr (codecs::is_codec_pair&lt;std::decay_t&lt;CODEC_PAIR&gt;&gt;::value)</span>
 <span id="L810"><span class="lineNum">     810</span>              :     {</span>
-<span id="L811"><span class="lineNum">     811</span> <span class="tlaGNC">         730 :         return configuration(codec);</span></span>
+<span id="L811"><span class="lineNum">     811</span> <span class="tlaGNC">         722 :         return configuration(codec);</span></span>
 <span id="L812"><span class="lineNum">     812</span>              :     }</span>
 <span id="L813"><span class="lineNum">     813</span>              :     else if constexpr (codecs::is_key_codec&lt;std::decay_t&lt;CODEC_PAIR&gt;&gt;::value)</span>
 <span id="L814"><span class="lineNum">     814</span>              :     {</span>
@@ -884,9 +884,9 @@
 <span id="L824"><span class="lineNum">     824</span>              :     }</span>
 <span id="L825"><span class="lineNum">     825</span>              : }</span>
 <span id="L826"><span class="lineNum">     826</span>              : </span>
-<span id="L827"><span class="lineNum">     827</span> <span class="tlaGNC">         730 : template &lt;typename KC, typename VC&gt; auto config(KC key_codec, VC value_codec)</span></span>
+<span id="L827"><span class="lineNum">     827</span> <span class="tlaGNC">         722 : template &lt;typename KC, typename VC&gt; auto config(KC key_codec, VC value_codec)</span></span>
 <span id="L828"><span class="lineNum">     828</span>              : {</span>
-<span id="L829"><span class="lineNum">     829</span> <span class="tlaGNC">         730 :     return config(codecs::codec_pair(key_codec, value_codec));</span></span>
+<span id="L829"><span class="lineNum">     829</span> <span class="tlaGNC">         722 :     return config(codecs::codec_pair(key_codec, value_codec));</span></span>
 <span id="L830"><span class="lineNum">     830</span>              : }</span>
 <span id="L831"><span class="lineNum">     831</span>              : </span>
 <span id="L832"><span class="lineNum">     832</span>              : // Uses key type K and value type V to create configuration from</span>
@@ -896,9 +896,9 @@
 <span id="L836"><span class="lineNum">     836</span> <span class="tlaGNC">           5 :     return config(key_codec&lt;K&gt;(), value_codec&lt;V&gt;());</span></span>
 <span id="L837"><span class="lineNum">     837</span>              : }</span>
 <span id="L838"><span class="lineNum">     838</span>              : </span>
-<span id="L839"><span class="lineNum">     839</span> <span class="tlaGNC">         711 : inline auto config()</span></span>
+<span id="L839"><span class="lineNum">     839</span> <span class="tlaGNC">         703 : inline auto config()</span></span>
 <span id="L840"><span class="lineNum">     840</span>              : {</span>
-<span id="L841"><span class="lineNum">     841</span> <span class="tlaGNC">         711 :     return config(default_key_codec, default_value_codec);</span></span>
+<span id="L841"><span class="lineNum">     841</span> <span class="tlaGNC">         703 :     return config(default_key_codec, default_value_codec);</span></span>
 <span id="L842"><span class="lineNum">     842</span>              : }</span>
 <span id="L843"><span class="lineNum">     843</span>              : </span>
 <span id="L844"><span class="lineNum">     844</span>              : enum class column_option</span>
@@ -1484,25 +1484,25 @@
 <span id="L1424"><span class="lineNum">    1424</span>              :     {</span>
 <span id="L1425"><span class="lineNum">    1425</span> <span class="tlaGNC">          58 :     }</span></span>
 <span id="L1426"><span class="lineNum">    1426</span>              : </span>
-<span id="L1427"><span class="lineNum">    1427</span> <span class="tlaGNC">         749 :     sqlitemap(configuration&lt;CODEC_PAIR&gt; config)</span></span>
-<span id="L1428"><span class="lineNum">    1428</span> <span class="tlaGNC">         749 :         : _config(std::move(config))</span></span>
+<span id="L1427"><span class="lineNum">    1427</span> <span class="tlaGNC">         741 :     sqlitemap(configuration&lt;CODEC_PAIR&gt; config)</span></span>
+<span id="L1428"><span class="lineNum">    1428</span> <span class="tlaGNC">         741 :         : _config(std::move(config))</span></span>
 <span id="L1429"><span class="lineNum">    1429</span>              :     {</span>
-<span id="L1430"><span class="lineNum">    1430</span> <span class="tlaGNC">         749 :         log().set_level(_config.log_level());</span></span>
-<span id="L1431"><span class="lineNum">    1431</span> <span class="tlaGNC">         749 :         if (_config.log_impl())</span></span>
+<span id="L1430"><span class="lineNum">    1430</span> <span class="tlaGNC">         741 :         log().set_level(_config.log_level());</span></span>
+<span id="L1431"><span class="lineNum">    1431</span> <span class="tlaGNC">         741 :         if (_config.log_impl())</span></span>
 <span id="L1432"><span class="lineNum">    1432</span> <span class="tlaGNC">           1 :             log().register_log_impl(_config.log_impl());</span></span>
 <span id="L1433"><span class="lineNum">    1433</span>              : </span>
 <span id="L1434"><span class="lineNum">    1434</span>              :         namespace fs = std::filesystem;</span>
 <span id="L1435"><span class="lineNum">    1435</span>              :         try</span>
 <span id="L1436"><span class="lineNum">    1436</span>              :         {</span>
-<span id="L1437"><span class="lineNum">    1437</span> <span class="tlaGNC">         749 :             if (_config.filename().empty())</span></span>
+<span id="L1437"><span class="lineNum">    1437</span> <span class="tlaGNC">         741 :             if (_config.filename().empty())</span></span>
 <span id="L1438"><span class="lineNum">    1438</span>              :             {</span>
-<span id="L1439"><span class="lineNum">    1439</span> <span class="tlaGNC">         681 :                 auto dir = fs::temp_directory_path();</span></span>
-<span id="L1440"><span class="lineNum">    1440</span> <span class="tlaGNC">         681 :                 auto file = details::generate_temp_filename();</span></span>
-<span id="L1441"><span class="lineNum">    1441</span> <span class="tlaGNC">         681 :                 _config.filename((dir / file).string());</span></span>
-<span id="L1442"><span class="lineNum">    1442</span> <span class="tlaGNC">         681 :                 _in_temp = true;</span></span>
-<span id="L1443"><span class="lineNum">    1443</span> <span class="tlaGNC">         681 :             }</span></span>
+<span id="L1439"><span class="lineNum">    1439</span> <span class="tlaGNC">         673 :                 auto dir = fs::temp_directory_path();</span></span>
+<span id="L1440"><span class="lineNum">    1440</span> <span class="tlaGNC">         673 :                 auto file = details::generate_temp_filename();</span></span>
+<span id="L1441"><span class="lineNum">    1441</span> <span class="tlaGNC">         673 :                 _config.filename((dir / file).string());</span></span>
+<span id="L1442"><span class="lineNum">    1442</span> <span class="tlaGNC">         673 :                 _in_temp = true;</span></span>
+<span id="L1443"><span class="lineNum">    1443</span> <span class="tlaGNC">         673 :             }</span></span>
 <span id="L1444"><span class="lineNum">    1444</span>              : </span>
-<span id="L1445"><span class="lineNum">    1445</span> <span class="tlaGNC">         749 :             if (_config.mode() == operation_mode::n &amp;&amp; fs::exists(_config.filename()))</span></span>
+<span id="L1445"><span class="lineNum">    1445</span> <span class="tlaGNC">         741 :             if (_config.mode() == operation_mode::n &amp;&amp; fs::exists(_config.filename()))</span></span>
 <span id="L1446"><span class="lineNum">    1446</span> <span class="tlaGNC">           3 :                 fs::remove(_config.filename());</span></span>
 <span id="L1447"><span class="lineNum">    1447</span>              :         }</span>
 <span id="L1448"><span class="lineNum">    1448</span> <span class="tlaUNC tlaBgUNC">           0 :         catch (std::exception&amp; ex)</span></span>
@@ -1510,37 +1510,37 @@
 <span id="L1450"><span class="lineNum">    1450</span> <span class="tlaUNC">           0 :             throw sqlitemap_error(ex.what());</span></span>
 <span id="L1451"><span class="lineNum">    1451</span>              :         }</span>
 <span id="L1452"><span class="lineNum">    1452</span>              : </span>
-<span id="L1453"><span class="lineNum">    1453</span> <span class="tlaGNC tlaBgGNC">         749 :         auto dir = fs::path(_config.filename()).parent_path();</span></span>
-<span id="L1454"><span class="lineNum">    1454</span> <span class="tlaGNC">         749 :         if (dir.is_relative())</span></span>
+<span id="L1453"><span class="lineNum">    1453</span> <span class="tlaGNC tlaBgGNC">         741 :         auto dir = fs::path(_config.filename()).parent_path();</span></span>
+<span id="L1454"><span class="lineNum">    1454</span> <span class="tlaGNC">         741 :         if (dir.is_relative())</span></span>
 <span id="L1455"><span class="lineNum">    1455</span> <span class="tlaGNC">          12 :             dir = fs::current_path() / dir;</span></span>
 <span id="L1456"><span class="lineNum">    1456</span>              : </span>
-<span id="L1457"><span class="lineNum">    1457</span> <span class="tlaGNC">         749 :         if (!in_memory() &amp;&amp; !fs::exists(dir))</span></span>
+<span id="L1457"><span class="lineNum">    1457</span> <span class="tlaGNC">         741 :         if (!in_memory() &amp;&amp; !fs::exists(dir))</span></span>
 <span id="L1458"><span class="lineNum">    1458</span> <span class="tlaGNC">           1 :             throw sqlitemap_error(&quot;The directory does not exist: &quot; + dir.string());</span></span>
 <span id="L1459"><span class="lineNum">    1459</span>              : </span>
-<span id="L1460"><span class="lineNum">    1460</span> <span class="tlaGNC">         748 :         log().debug(&quot;sqlitemap - file: '&quot; + _config.filename() + &quot;' table: '&quot; + _config.table() +</span></span>
+<span id="L1460"><span class="lineNum">    1460</span> <span class="tlaGNC">         740 :         log().debug(&quot;sqlitemap - file: '&quot; + _config.filename() + &quot;' table: '&quot; + _config.table() +</span></span>
 <span id="L1461"><span class="lineNum">    1461</span>              :                     &quot;' sqlite3_libversion: &quot; + sqlite3_libversion());</span>
 <span id="L1462"><span class="lineNum">    1462</span>              : </span>
-<span id="L1463"><span class="lineNum">    1463</span> <span class="tlaGNC">         748 :         connect();</span></span>
-<span id="L1464"><span class="lineNum">    1464</span> <span class="tlaGNC">         759 :     }</span></span>
+<span id="L1463"><span class="lineNum">    1463</span> <span class="tlaGNC">         740 :         connect();</span></span>
+<span id="L1464"><span class="lineNum">    1464</span> <span class="tlaGNC">         751 :     }</span></span>
 <span id="L1465"><span class="lineNum">    1465</span>              : </span>
-<span id="L1466"><span class="lineNum">    1466</span> <span class="tlaGNC">         744 :     ~sqlitemap()</span></span>
+<span id="L1466"><span class="lineNum">    1466</span> <span class="tlaGNC">         736 :     ~sqlitemap()</span></span>
 <span id="L1467"><span class="lineNum">    1467</span>              :     {</span>
 <span id="L1468"><span class="lineNum">    1468</span>              :         try</span>
 <span id="L1469"><span class="lineNum">    1469</span>              :         {</span>
-<span id="L1470"><span class="lineNum">    1470</span> <span class="tlaGNC">         744 :             close();</span></span>
+<span id="L1470"><span class="lineNum">    1470</span> <span class="tlaGNC">         736 :             close();</span></span>
 <span id="L1471"><span class="lineNum">    1471</span>              :         }</span>
 <span id="L1472"><span class="lineNum">    1472</span> <span class="tlaUNC tlaBgUNC">           0 :         catch (std::exception&amp; ex)</span></span>
 <span id="L1473"><span class="lineNum">    1473</span>              :         {</span>
 <span id="L1474"><span class="lineNum">    1474</span> <span class="tlaUNC">           0 :             log().error(std::string(&quot;Descruction of sqlitemap failed. Error: &quot;) + ex.what());</span></span>
 <span id="L1475"><span class="lineNum">    1475</span>              :         }</span>
-<span id="L1476"><span class="lineNum">    1476</span> <span class="tlaGNC tlaBgGNC">         744 :     }</span></span>
+<span id="L1476"><span class="lineNum">    1476</span> <span class="tlaGNC tlaBgGNC">         736 :     }</span></span>
 <span id="L1477"><span class="lineNum">    1477</span>              : </span>
-<span id="L1478"><span class="lineNum">    1478</span> <span class="tlaGNC">         748 :     void open_database(const std::string&amp; file)</span></span>
+<span id="L1478"><span class="lineNum">    1478</span> <span class="tlaGNC">         740 :     void open_database(const std::string&amp; file)</span></span>
 <span id="L1479"><span class="lineNum">    1479</span>              :     {</span>
 <span id="L1480"><span class="lineNum">    1480</span>              :         try</span>
 <span id="L1481"><span class="lineNum">    1481</span>              :         {</span>
-<span id="L1482"><span class="lineNum">    1482</span> <span class="tlaGNC">         748 :             int rc = SQLITE_ERROR;</span></span>
-<span id="L1483"><span class="lineNum">    1483</span> <span class="tlaGNC">         748 :             if (is_read_only())</span></span>
+<span id="L1482"><span class="lineNum">    1482</span> <span class="tlaGNC">         740 :             int rc = SQLITE_ERROR;</span></span>
+<span id="L1483"><span class="lineNum">    1483</span> <span class="tlaGNC">         740 :             if (is_read_only())</span></span>
 <span id="L1484"><span class="lineNum">    1484</span>              :             {</span>
 <span id="L1485"><span class="lineNum">    1485</span>              :                 // open database but do not create one if missing</span>
 <span id="L1486"><span class="lineNum">    1486</span> <span class="tlaGNC">           8 :                 rc = sqlite3_open_v2(file.c_str(), &amp;db, SQLITE_OPEN_READONLY, nullptr);</span></span>
@@ -1548,30 +1548,30 @@
 <span id="L1488"><span class="lineNum">    1488</span>              :             else</span>
 <span id="L1489"><span class="lineNum">    1489</span>              :             {</span>
 <span id="L1490"><span class="lineNum">    1490</span>              :                 // open or create the database</span>
-<span id="L1491"><span class="lineNum">    1491</span> <span class="tlaGNC">         740 :                 rc = sqlite3_open(file.c_str(), &amp;db);</span></span>
+<span id="L1491"><span class="lineNum">    1491</span> <span class="tlaGNC">         732 :                 rc = sqlite3_open(file.c_str(), &amp;db);</span></span>
 <span id="L1492"><span class="lineNum">    1492</span>              :             }</span>
 <span id="L1493"><span class="lineNum">    1493</span>              : </span>
-<span id="L1494"><span class="lineNum">    1494</span> <span class="tlaGNC">        1498 :             details::check_ok(rc, &quot;Cannot open database&quot;, db);</span></span>
-<span id="L1495"><span class="lineNum">    1495</span> <span class="tlaGNC">         746 :             log().debug(&quot;Database '&quot; + config().filename() + &quot;' opened successfully!&quot;);</span></span>
+<span id="L1494"><span class="lineNum">    1494</span> <span class="tlaGNC">        1482 :             details::check_ok(rc, &quot;Cannot open database&quot;, db);</span></span>
+<span id="L1495"><span class="lineNum">    1495</span> <span class="tlaGNC">         738 :             log().debug(&quot;Database '&quot; + config().filename() + &quot;' opened successfully!&quot;);</span></span>
 <span id="L1496"><span class="lineNum">    1496</span>              :         }</span>
 <span id="L1497"><span class="lineNum">    1497</span> <span class="tlaGNC">           4 :         catch (const std::exception&amp; e)</span></span>
 <span id="L1498"><span class="lineNum">    1498</span>              :         {</span>
 <span id="L1499"><span class="lineNum">    1499</span> <span class="tlaGNC">           2 :             sqlite3_close(db);</span></span>
 <span id="L1500"><span class="lineNum">    1500</span> <span class="tlaGNC">           2 :             throw;</span></span>
 <span id="L1501"><span class="lineNum">    1501</span>              :         }</span>
-<span id="L1502"><span class="lineNum">    1502</span> <span class="tlaGNC">         746 :     }</span></span>
+<span id="L1502"><span class="lineNum">    1502</span> <span class="tlaGNC">         738 :     }</span></span>
 <span id="L1503"><span class="lineNum">    1503</span>              : </span>
 <span id="L1504"><span class="lineNum">    1504</span>              :     // Connects to the underlying database and initializes the table if required. Throws exception</span>
 <span id="L1505"><span class="lineNum">    1505</span>              :     // in error cases.</span>
-<span id="L1506"><span class="lineNum">    1506</span> <span class="tlaGNC">         748 :     void connect()</span></span>
+<span id="L1506"><span class="lineNum">    1506</span> <span class="tlaGNC">         740 :     void connect()</span></span>
 <span id="L1507"><span class="lineNum">    1507</span>              :     {</span>
 <span id="L1508"><span class="lineNum">    1508</span>              :         using namespace codecs;</span>
 <span id="L1509"><span class="lineNum">    1509</span>              : </span>
 <span id="L1510"><span class="lineNum">    1510</span>              :         try</span>
 <span id="L1511"><span class="lineNum">    1511</span>              :         {</span>
-<span id="L1512"><span class="lineNum">    1512</span> <span class="tlaGNC">         750 :             open_database(config().filename());</span></span>
+<span id="L1512"><span class="lineNum">    1512</span> <span class="tlaGNC">         742 :             open_database(config().filename());</span></span>
 <span id="L1513"><span class="lineNum">    1513</span>              : </span>
-<span id="L1514"><span class="lineNum">    1514</span> <span class="tlaGNC">         746 :             if (is_read_only())</span></span>
+<span id="L1514"><span class="lineNum">    1514</span> <span class="tlaGNC">         738 :             if (is_read_only())</span></span>
 <span id="L1515"><span class="lineNum">    1515</span>              :             {</span>
 <span id="L1516"><span class="lineNum">    1516</span> <span class="tlaGNC">           7 :                 std::vector&lt;std::string&gt; tables = get_tablenames(config().filename());</span></span>
 <span id="L1517"><span class="lineNum">    1517</span> <span class="tlaGNC">           5 :                 if (std::find(tables.begin(), tables.end(), config().table()) == tables.end())</span></span>
@@ -1583,32 +1583,32 @@
 <span id="L1523"><span class="lineNum">    1523</span> <span class="tlaGNC">           5 :             }</span></span>
 <span id="L1524"><span class="lineNum">    1524</span>              : </span>
 <span id="L1525"><span class="lineNum">    1525</span>              :             // execute pragma statements</span>
-<span id="L1526"><span class="lineNum">    1526</span> <span class="tlaGNC">         748 :             for (const auto&amp; pragma_statement : config().pragmas())</span></span>
+<span id="L1526"><span class="lineNum">    1526</span> <span class="tlaGNC">         740 :             for (const auto&amp; pragma_statement : config().pragmas())</span></span>
 <span id="L1527"><span class="lineNum">    1527</span>              :             {</span>
 <span id="L1528"><span class="lineNum">    1528</span> <span class="tlaGNC">           4 :                 details::exec_checked(db, pragma_statement);</span></span>
 <span id="L1529"><span class="lineNum">    1529</span>              :             }</span>
 <span id="L1530"><span class="lineNum">    1530</span>              : </span>
 <span id="L1531"><span class="lineNum">    1531</span>              :             // create table if missing</span>
-<span id="L1532"><span class="lineNum">    1532</span> <span class="tlaGNC">         744 :             auto key_type = codecs::to_string(sqlite_storage_class_from_type&lt;db_key_type&gt;());</span></span>
-<span id="L1533"><span class="lineNum">    1533</span> <span class="tlaGNC">         744 :             auto value_type = codecs::to_string(sqlite_storage_class_from_type&lt;db_mapped_type&gt;());</span></span>
-<span id="L1534"><span class="lineNum">    1534</span> <span class="tlaGNC">         744 :             auto create_table_sql = sql(&quot;CREATE TABLE IF NOT EXISTS :table (key &quot; + key_type +</span></span>
+<span id="L1532"><span class="lineNum">    1532</span> <span class="tlaGNC">         736 :             auto key_type = codecs::to_string(sqlite_storage_class_from_type&lt;db_key_type&gt;());</span></span>
+<span id="L1533"><span class="lineNum">    1533</span> <span class="tlaGNC">         736 :             auto value_type = codecs::to_string(sqlite_storage_class_from_type&lt;db_mapped_type&gt;());</span></span>
+<span id="L1534"><span class="lineNum">    1534</span> <span class="tlaGNC">         736 :             auto create_table_sql = sql(&quot;CREATE TABLE IF NOT EXISTS :table (key &quot; + key_type +</span></span>
 <span id="L1535"><span class="lineNum">    1535</span>              :                                         &quot; PRIMARY KEY, value &quot; + value_type + &quot;)&quot;);</span>
 <span id="L1536"><span class="lineNum">    1536</span>              : </span>
-<span id="L1537"><span class="lineNum">    1537</span> <span class="tlaGNC">         744 :             details::exec_checked(db, create_table_sql);</span></span>
-<span id="L1538"><span class="lineNum">    1538</span> <span class="tlaGNC">         744 :             commit();</span></span>
-<span id="L1539"><span class="lineNum">    1539</span> <span class="tlaGNC">         744 :             log().debug(&quot;Table '&quot; + config().table() + &quot;' created successfully&quot;);</span></span>
+<span id="L1537"><span class="lineNum">    1537</span> <span class="tlaGNC">         736 :             details::exec_checked(db, create_table_sql);</span></span>
+<span id="L1538"><span class="lineNum">    1538</span> <span class="tlaGNC">         736 :             commit();</span></span>
+<span id="L1539"><span class="lineNum">    1539</span> <span class="tlaGNC">         736 :             log().debug(&quot;Table '&quot; + config().table() + &quot;' created successfully&quot;);</span></span>
 <span id="L1540"><span class="lineNum">    1540</span>              : </span>
-<span id="L1541"><span class="lineNum">    1541</span> <span class="tlaGNC">         744 :             if (config().mode() == operation_mode::w)</span></span>
+<span id="L1541"><span class="lineNum">    1541</span> <span class="tlaGNC">         736 :             if (config().mode() == operation_mode::w)</span></span>
 <span id="L1542"><span class="lineNum">    1542</span>              :             {</span>
 <span id="L1543"><span class="lineNum">    1543</span> <span class="tlaGNC">           7 :                 clear();</span></span>
 <span id="L1544"><span class="lineNum">    1544</span>              :             }</span>
-<span id="L1545"><span class="lineNum">    1545</span> <span class="tlaGNC">         744 :         }</span></span>
+<span id="L1545"><span class="lineNum">    1545</span> <span class="tlaGNC">         736 :         }</span></span>
 <span id="L1546"><span class="lineNum">    1546</span> <span class="tlaGNC">           8 :         catch (const std::exception&amp; e)</span></span>
 <span id="L1547"><span class="lineNum">    1547</span>              :         {</span>
 <span id="L1548"><span class="lineNum">    1548</span> <span class="tlaGNC">           4 :             sqlite3_close(db);</span></span>
 <span id="L1549"><span class="lineNum">    1549</span> <span class="tlaGNC">           4 :             throw;</span></span>
 <span id="L1550"><span class="lineNum">    1550</span>              :         }</span>
-<span id="L1551"><span class="lineNum">    1551</span> <span class="tlaGNC">         744 :     }</span></span>
+<span id="L1551"><span class="lineNum">    1551</span> <span class="tlaGNC">         736 :     }</span></span>
 <span id="L1552"><span class="lineNum">    1552</span>              : </span>
 <span id="L1553"><span class="lineNum">    1553</span>              :     // Get the underlying SQLite connection object, this is used for advanced users</span>
 <span id="L1554"><span class="lineNum">    1554</span>              :     // who want to use the connection directly to execute custom queries</span>
@@ -1617,37 +1617,37 @@
 <span id="L1557"><span class="lineNum">    1557</span> <span class="tlaGNC">           8 :         return db;</span></span>
 <span id="L1558"><span class="lineNum">    1558</span>              :     }</span>
 <span id="L1559"><span class="lineNum">    1559</span>              : </span>
-<span id="L1560"><span class="lineNum">    1560</span> <span class="tlaGNC">      355915 :     void set(const key_type&amp; key, const mapped_type&amp; value)</span></span>
+<span id="L1560"><span class="lineNum">    1560</span> <span class="tlaGNC">      347915 :     void set(const key_type&amp; key, const mapped_type&amp; value)</span></span>
 <span id="L1561"><span class="lineNum">    1561</span>              :     {</span>
-<span id="L1562"><span class="lineNum">    1562</span> <span class="tlaGNC">      355915 :         if (is_read_only())</span></span>
+<span id="L1562"><span class="lineNum">    1562</span> <span class="tlaGNC">      347915 :         if (is_read_only())</span></span>
 <span id="L1563"><span class="lineNum">    1563</span> <span class="tlaGNC">           3 :             throw sqlitemap_error(&quot;Refusing to write to read-only sqlitemap&quot;);</span></span>
 <span id="L1564"><span class="lineNum">    1564</span>              : </span>
-<span id="L1565"><span class="lineNum">    1565</span> <span class="tlaGNC">      355914 :         sqlite3_stmt* stmt = nullptr;</span></span>
-<span id="L1566"><span class="lineNum">    1566</span> <span class="tlaGNC">      355914 :         auto set_sql = sql(&quot;REPLACE INTO :table (key, value) VALUES (?,?)&quot;);</span></span>
-<span id="L1567"><span class="lineNum">    1567</span> <span class="tlaGNC">      355914 :         details::prepare_checked(db, set_sql, &amp;stmt);</span></span>
+<span id="L1565"><span class="lineNum">    1565</span> <span class="tlaGNC">      347914 :         sqlite3_stmt* stmt = nullptr;</span></span>
+<span id="L1566"><span class="lineNum">    1566</span> <span class="tlaGNC">      347914 :         auto set_sql = sql(&quot;REPLACE INTO :table (key, value) VALUES (?,?)&quot;);</span></span>
+<span id="L1567"><span class="lineNum">    1567</span> <span class="tlaGNC">      347914 :         details::prepare_checked(db, set_sql, &amp;stmt);</span></span>
 <span id="L1568"><span class="lineNum">    1568</span>              : </span>
 <span id="L1569"><span class="lineNum">    1569</span>              :         try</span>
 <span id="L1570"><span class="lineNum">    1570</span>              :         {</span>
-<span id="L1571"><span class="lineNum">    1571</span> <span class="tlaGNC">      355914 :             auto encoded_key = _config.codecs().key_codec.encode(key);</span></span>
-<span id="L1572"><span class="lineNum">    1572</span> <span class="tlaGNC">      711828 :             details::bind_param_checked(stmt, 1, encoded_key, &quot;Failed to bind key&quot;, db);</span></span>
+<span id="L1571"><span class="lineNum">    1571</span> <span class="tlaGNC">      347914 :             auto encoded_key = _config.codecs().key_codec.encode(key);</span></span>
+<span id="L1572"><span class="lineNum">    1572</span> <span class="tlaGNC">      695828 :             details::bind_param_checked(stmt, 1, encoded_key, &quot;Failed to bind key&quot;, db);</span></span>
 <span id="L1573"><span class="lineNum">    1573</span>              : </span>
-<span id="L1574"><span class="lineNum">    1574</span> <span class="tlaGNC">      355914 :             auto encoded_value = _config.codecs().value_codec.encode(value);</span></span>
-<span id="L1575"><span class="lineNum">    1575</span> <span class="tlaGNC">      711828 :             details::bind_param_checked(stmt, 2, encoded_value, &quot;Failed to bind value&quot;, db);</span></span>
+<span id="L1574"><span class="lineNum">    1574</span> <span class="tlaGNC">      347914 :             auto encoded_value = _config.codecs().value_codec.encode(value);</span></span>
+<span id="L1575"><span class="lineNum">    1575</span> <span class="tlaGNC">      695828 :             details::bind_param_checked(stmt, 2, encoded_value, &quot;Failed to bind value&quot;, db);</span></span>
 <span id="L1576"><span class="lineNum">    1576</span>              : </span>
 <span id="L1577"><span class="lineNum">    1577</span>              :             // sqlite auto commits changes when _no_ transactions was started by user</span>
-<span id="L1578"><span class="lineNum">    1578</span> <span class="tlaGNC">      355914 :             if (!config().auto_commit())</span></span>
-<span id="L1579"><span class="lineNum">    1579</span> <span class="tlaGNC">      345794 :                 begin_transaction();</span></span>
+<span id="L1578"><span class="lineNum">    1578</span> <span class="tlaGNC">      347914 :             if (!config().auto_commit())</span></span>
+<span id="L1579"><span class="lineNum">    1579</span> <span class="tlaGNC">      337794 :                 begin_transaction();</span></span>
 <span id="L1580"><span class="lineNum">    1580</span>              : </span>
-<span id="L1581"><span class="lineNum">    1581</span> <span class="tlaGNC">      355914 :             details::check_done(sqlite3_step(stmt), db);</span></span>
-<span id="L1582"><span class="lineNum">    1582</span> <span class="tlaGNC">      355914 :             sqlite3_finalize(stmt);</span></span>
-<span id="L1583"><span class="lineNum">    1583</span> <span class="tlaGNC">      355909 :         }</span></span>
+<span id="L1581"><span class="lineNum">    1581</span> <span class="tlaGNC">      347914 :             details::check_done(sqlite3_step(stmt), db);</span></span>
+<span id="L1582"><span class="lineNum">    1582</span> <span class="tlaGNC">      347914 :             sqlite3_finalize(stmt);</span></span>
+<span id="L1583"><span class="lineNum">    1583</span> <span class="tlaGNC">      347909 :         }</span></span>
 <span id="L1584"><span class="lineNum">    1584</span> <span class="tlaUNC tlaBgUNC">           0 :         catch (const std::exception&amp; e)</span></span>
 <span id="L1585"><span class="lineNum">    1585</span>              :         {</span>
 <span id="L1586"><span class="lineNum">    1586</span>              :             // clean up and rethrow the exception</span>
 <span id="L1587"><span class="lineNum">    1587</span> <span class="tlaUNC">           0 :             sqlite3_finalize(stmt);</span></span>
 <span id="L1588"><span class="lineNum">    1588</span> <span class="tlaUNC">           0 :             throw;</span></span>
 <span id="L1589"><span class="lineNum">    1589</span>              :         }</span>
-<span id="L1590"><span class="lineNum">    1590</span> <span class="tlaGNC tlaBgGNC">      355914 :     }</span></span>
+<span id="L1590"><span class="lineNum">    1590</span> <span class="tlaGNC tlaBgGNC">      347914 :     }</span></span>
 <span id="L1591"><span class="lineNum">    1591</span>              : </span>
 <span id="L1592"><span class="lineNum">    1592</span>              :     // get value associated with key. Throws a sqliteman_error when key does not exist</span>
 <span id="L1593"><span class="lineNum">    1593</span>              :     // also cf. try_get for a not throwing alternative</span>
@@ -1745,23 +1745,23 @@
 <span id="L1685"><span class="lineNum">    1685</span>              :         }</span>
 <span id="L1686"><span class="lineNum">    1686</span> <span class="tlaGNC tlaBgGNC">          25 :     }</span></span>
 <span id="L1687"><span class="lineNum">    1687</span>              : </span>
-<span id="L1688"><span class="lineNum">    1688</span> <span class="tlaGNC">         703 :     size_t size() const</span></span>
+<span id="L1688"><span class="lineNum">    1688</span> <span class="tlaGNC">         695 :     size_t size() const</span></span>
 <span id="L1689"><span class="lineNum">    1689</span>              :     {</span>
 <span id="L1690"><span class="lineNum">    1690</span>              :         // `select count (*)` is super slow in sqlite but ok for now?</span>
 <span id="L1691"><span class="lineNum">    1691</span>              : </span>
-<span id="L1692"><span class="lineNum">    1692</span> <span class="tlaGNC">         703 :         auto count_callback = [](void* count_ptr, int argc, char** argv, char** col_name)</span></span>
+<span id="L1692"><span class="lineNum">    1692</span> <span class="tlaGNC">         695 :         auto count_callback = [](void* count_ptr, int argc, char** argv, char** col_name)</span></span>
 <span id="L1693"><span class="lineNum">    1693</span>              :         {</span>
-<span id="L1694"><span class="lineNum">    1694</span> <span class="tlaGNC">         703 :             int* row_count = (int*)count_ptr;</span></span>
-<span id="L1695"><span class="lineNum">    1695</span> <span class="tlaGNC">         703 :             *row_count = atoi(argv[0]); // The result of COUNT(*) is in the first column</span></span>
-<span id="L1696"><span class="lineNum">    1696</span> <span class="tlaGNC">         703 :             return 0;</span></span>
+<span id="L1694"><span class="lineNum">    1694</span> <span class="tlaGNC">         695 :             int* row_count = (int*)count_ptr;</span></span>
+<span id="L1695"><span class="lineNum">    1695</span> <span class="tlaGNC">         695 :             *row_count = atoi(argv[0]); // The result of COUNT(*) is in the first column</span></span>
+<span id="L1696"><span class="lineNum">    1696</span> <span class="tlaGNC">         695 :             return 0;</span></span>
 <span id="L1697"><span class="lineNum">    1697</span>              :         };</span>
 <span id="L1698"><span class="lineNum">    1698</span>              : </span>
-<span id="L1699"><span class="lineNum">    1699</span> <span class="tlaGNC">         703 :         int row_count = 0;</span></span>
-<span id="L1700"><span class="lineNum">    1700</span> <span class="tlaGNC">         703 :         auto count_sql = sql(&quot;SELECT COUNT(*) FROM :table&quot;);</span></span>
-<span id="L1701"><span class="lineNum">    1701</span> <span class="tlaGNC">         703 :         details::exec_checked(db, count_sql, count_callback, &amp;row_count);</span></span>
+<span id="L1699"><span class="lineNum">    1699</span> <span class="tlaGNC">         695 :         int row_count = 0;</span></span>
+<span id="L1700"><span class="lineNum">    1700</span> <span class="tlaGNC">         695 :         auto count_sql = sql(&quot;SELECT COUNT(*) FROM :table&quot;);</span></span>
+<span id="L1701"><span class="lineNum">    1701</span> <span class="tlaGNC">         695 :         details::exec_checked(db, count_sql, count_callback, &amp;row_count);</span></span>
 <span id="L1702"><span class="lineNum">    1702</span>              : </span>
-<span id="L1703"><span class="lineNum">    1703</span> <span class="tlaGNC">         703 :         return row_count;</span></span>
-<span id="L1704"><span class="lineNum">    1704</span> <span class="tlaGNC">         703 :     }</span></span>
+<span id="L1703"><span class="lineNum">    1703</span> <span class="tlaGNC">         695 :         return row_count;</span></span>
+<span id="L1704"><span class="lineNum">    1704</span> <span class="tlaGNC">         695 :     }</span></span>
 <span id="L1705"><span class="lineNum">    1705</span>              : </span>
 <span id="L1706"><span class="lineNum">    1706</span> <span class="tlaGNC">          38 :     bool empty() const</span></span>
 <span id="L1707"><span class="lineNum">    1707</span>              :     {</span>
@@ -2048,17 +2048,17 @@
 <span id="L1988"><span class="lineNum">    1988</span> <span class="tlaGNC">           4 :         return {it, it};</span></span>
 <span id="L1989"><span class="lineNum">    1989</span> <span class="tlaGNC">           2 :     }</span></span>
 <span id="L1990"><span class="lineNum">    1990</span>              : </span>
-<span id="L1991"><span class="lineNum">    1991</span> <span class="tlaGNC">      345821 :     void begin_transaction()</span></span>
+<span id="L1991"><span class="lineNum">    1991</span> <span class="tlaGNC">      337821 :     void begin_transaction()</span></span>
 <span id="L1992"><span class="lineNum">    1992</span>              :     {</span>
 <span id="L1993"><span class="lineNum">    1993</span>              :         // details::exec_checked(db, &quot;BEGIN TRANSACTION&quot;);</span>
-<span id="L1994"><span class="lineNum">    1994</span> <span class="tlaGNC">      345821 :         int rc = sqlite3_exec(db, &quot;BEGIN TRANSACTION&quot;, nullptr, nullptr, nullptr);</span></span>
-<span id="L1995"><span class="lineNum">    1995</span> <span class="tlaGNC">      345821 :     }</span></span>
+<span id="L1994"><span class="lineNum">    1994</span> <span class="tlaGNC">      337821 :         int rc = sqlite3_exec(db, &quot;BEGIN TRANSACTION&quot;, nullptr, nullptr, nullptr);</span></span>
+<span id="L1995"><span class="lineNum">    1995</span> <span class="tlaGNC">      337821 :     }</span></span>
 <span id="L1996"><span class="lineNum">    1996</span>              : </span>
-<span id="L1997"><span class="lineNum">    1997</span> <span class="tlaGNC">         884 :     void commit()</span></span>
+<span id="L1997"><span class="lineNum">    1997</span> <span class="tlaGNC">         876 :     void commit()</span></span>
 <span id="L1998"><span class="lineNum">    1998</span>              :     {</span>
 <span id="L1999"><span class="lineNum">    1999</span>              :         // details::exec_checked(db, &quot;COMMIT&quot;);</span>
-<span id="L2000"><span class="lineNum">    2000</span> <span class="tlaGNC">         884 :         int rc = sqlite3_exec(db, &quot;COMMIT&quot;, nullptr, nullptr, nullptr);</span></span>
-<span id="L2001"><span class="lineNum">    2001</span> <span class="tlaGNC">         884 :     }</span></span>
+<span id="L2000"><span class="lineNum">    2000</span> <span class="tlaGNC">         876 :         int rc = sqlite3_exec(db, &quot;COMMIT&quot;, nullptr, nullptr, nullptr);</span></span>
+<span id="L2001"><span class="lineNum">    2001</span> <span class="tlaGNC">         876 :     }</span></span>
 <span id="L2002"><span class="lineNum">    2002</span>              : </span>
 <span id="L2003"><span class="lineNum">    2003</span> <span class="tlaGNC">           4 :     void rollback()</span></span>
 <span id="L2004"><span class="lineNum">    2004</span>              :     {</span>
@@ -2066,28 +2066,28 @@
 <span id="L2006"><span class="lineNum">    2006</span> <span class="tlaGNC">           4 :         int rc = sqlite3_exec(db, &quot;ROLLBACK&quot;, nullptr, nullptr, nullptr);</span></span>
 <span id="L2007"><span class="lineNum">    2007</span> <span class="tlaGNC">           4 :     }</span></span>
 <span id="L2008"><span class="lineNum">    2008</span>              : </span>
-<span id="L2009"><span class="lineNum">    2009</span> <span class="tlaGNC">         757 :     void close()</span></span>
+<span id="L2009"><span class="lineNum">    2009</span> <span class="tlaGNC">         749 :     void close()</span></span>
 <span id="L2010"><span class="lineNum">    2010</span>              :     {</span>
-<span id="L2011"><span class="lineNum">    2011</span> <span class="tlaGNC">         757 :         if (config().auto_commit())</span></span>
+<span id="L2011"><span class="lineNum">    2011</span> <span class="tlaGNC">         749 :         if (config().auto_commit())</span></span>
 <span id="L2012"><span class="lineNum">    2012</span> <span class="tlaGNC">         111 :             commit();</span></span>
 <span id="L2013"><span class="lineNum">    2013</span>              : </span>
 <span id="L2014"><span class="lineNum">    2014</span>              :         // Close the database connection</span>
-<span id="L2015"><span class="lineNum">    2015</span> <span class="tlaGNC">         757 :         sqlite3_close(db);</span></span>
-<span id="L2016"><span class="lineNum">    2016</span> <span class="tlaGNC">        1514 :         log().debug(&quot;Database closed&quot;);</span></span>
+<span id="L2015"><span class="lineNum">    2015</span> <span class="tlaGNC">         749 :         sqlite3_close(db);</span></span>
+<span id="L2016"><span class="lineNum">    2016</span> <span class="tlaGNC">        1498 :         log().debug(&quot;Database closed&quot;);</span></span>
 <span id="L2017"><span class="lineNum">    2017</span>              : </span>
-<span id="L2018"><span class="lineNum">    2018</span> <span class="tlaGNC">         757 :         if (in_temp())</span></span>
+<span id="L2018"><span class="lineNum">    2018</span> <span class="tlaGNC">         749 :         if (in_temp())</span></span>
 <span id="L2019"><span class="lineNum">    2019</span>              :         {</span>
 <span id="L2020"><span class="lineNum">    2020</span>              :             try</span>
 <span id="L2021"><span class="lineNum">    2021</span>              :             {</span>
-<span id="L2022"><span class="lineNum">    2022</span> <span class="tlaGNC">         684 :                 std::filesystem::remove(_config.filename());</span></span>
-<span id="L2023"><span class="lineNum">    2023</span> <span class="tlaGNC">         684 :                 log().debug(&quot;Database file '&quot; + config().filename() + &quot;' removed&quot;);</span></span>
+<span id="L2022"><span class="lineNum">    2022</span> <span class="tlaGNC">         676 :                 std::filesystem::remove(_config.filename());</span></span>
+<span id="L2023"><span class="lineNum">    2023</span> <span class="tlaGNC">         676 :                 log().debug(&quot;Database file '&quot; + config().filename() + &quot;' removed&quot;);</span></span>
 <span id="L2024"><span class="lineNum">    2024</span>              :             }</span>
 <span id="L2025"><span class="lineNum">    2025</span> <span class="tlaUNC tlaBgUNC">           0 :             catch (std::exception&amp; ex)</span></span>
 <span id="L2026"><span class="lineNum">    2026</span>              :             {</span>
 <span id="L2027"><span class="lineNum">    2027</span>              :                 /**/</span>
 <span id="L2028"><span class="lineNum">    2028</span>              :             }</span>
 <span id="L2029"><span class="lineNum">    2029</span>              :         }</span>
-<span id="L2030"><span class="lineNum">    2030</span> <span class="tlaGNC tlaBgGNC">         757 :     }</span></span>
+<span id="L2030"><span class="lineNum">    2030</span> <span class="tlaGNC tlaBgGNC">         749 :     }</span></span>
 <span id="L2031"><span class="lineNum">    2031</span>              : </span>
 <span id="L2032"><span class="lineNum">    2032</span>              :     // Delete the underlying database file. Use with care.</span>
 <span id="L2033"><span class="lineNum">    2033</span> <span class="tlaGNC">          10 :     void terminate()</span></span>
@@ -2114,9 +2114,9 @@
 <span id="L2054"><span class="lineNum">    2054</span>              :         }</span>
 <span id="L2055"><span class="lineNum">    2055</span>              :     }</span>
 <span id="L2056"><span class="lineNum">    2056</span>              : </span>
-<span id="L2057"><span class="lineNum">    2057</span> <span class="tlaGNC tlaBgGNC">      361173 :     const configuration&lt;CODEC_PAIR&gt;&amp; config() const</span></span>
+<span id="L2057"><span class="lineNum">    2057</span> <span class="tlaGNC tlaBgGNC">      353117 :     const configuration&lt;CODEC_PAIR&gt;&amp; config() const</span></span>
 <span id="L2058"><span class="lineNum">    2058</span>              :     {</span>
-<span id="L2059"><span class="lineNum">    2059</span> <span class="tlaGNC">      361173 :         return _config;</span></span>
+<span id="L2059"><span class="lineNum">    2059</span> <span class="tlaGNC">      353117 :         return _config;</span></span>
 <span id="L2060"><span class="lineNum">    2060</span>              :     }</span>
 <span id="L2061"><span class="lineNum">    2061</span>              : </span>
 <span id="L2062"><span class="lineNum">    2062</span> <span class="tlaGNC">           2 :     std::string to_string() const</span></span>
@@ -2124,19 +2124,19 @@
 <span id="L2064"><span class="lineNum">    2064</span> <span class="tlaGNC">           2 :         return &quot;sqlitemap(&quot; + _config.filename() + &quot;)&quot;;</span></span>
 <span id="L2065"><span class="lineNum">    2065</span>              :     }</span>
 <span id="L2066"><span class="lineNum">    2066</span>              : </span>
-<span id="L2067"><span class="lineNum">    2067</span> <span class="tlaGNC">         750 :     bool in_memory() const</span></span>
+<span id="L2067"><span class="lineNum">    2067</span> <span class="tlaGNC">         742 :     bool in_memory() const</span></span>
 <span id="L2068"><span class="lineNum">    2068</span>              :     {</span>
-<span id="L2069"><span class="lineNum">    2069</span> <span class="tlaGNC">         750 :         return _config.filename() == &quot;:memory:&quot;;</span></span>
+<span id="L2069"><span class="lineNum">    2069</span> <span class="tlaGNC">         742 :         return _config.filename() == &quot;:memory:&quot;;</span></span>
 <span id="L2070"><span class="lineNum">    2070</span>              :     }</span>
 <span id="L2071"><span class="lineNum">    2071</span>              : </span>
-<span id="L2072"><span class="lineNum">    2072</span> <span class="tlaGNC">         758 :     bool in_temp() const</span></span>
+<span id="L2072"><span class="lineNum">    2072</span> <span class="tlaGNC">         750 :     bool in_temp() const</span></span>
 <span id="L2073"><span class="lineNum">    2073</span>              :     {</span>
-<span id="L2074"><span class="lineNum">    2074</span> <span class="tlaGNC">         758 :         return _in_temp;</span></span>
+<span id="L2074"><span class="lineNum">    2074</span> <span class="tlaGNC">         750 :         return _in_temp;</span></span>
 <span id="L2075"><span class="lineNum">    2075</span>              :     }</span>
 <span id="L2076"><span class="lineNum">    2076</span>              : </span>
-<span id="L2077"><span class="lineNum">    2077</span> <span class="tlaGNC">      357557 :     bool is_read_only() const</span></span>
+<span id="L2077"><span class="lineNum">    2077</span> <span class="tlaGNC">      349541 :     bool is_read_only() const</span></span>
 <span id="L2078"><span class="lineNum">    2078</span>              :     {</span>
-<span id="L2079"><span class="lineNum">    2079</span> <span class="tlaGNC">      357557 :         return _config.mode() == operation_mode::r;</span></span>
+<span id="L2079"><span class="lineNum">    2079</span> <span class="tlaGNC">      349541 :         return _config.mode() == operation_mode::r;</span></span>
 <span id="L2080"><span class="lineNum">    2080</span>              :     }</span>
 <span id="L2081"><span class="lineNum">    2081</span>              : </span>
 <span id="L2082"><span class="lineNum">    2082</span> <span class="tlaGNC">          56 :     iterator begin()</span></span>
@@ -2293,25 +2293,25 @@
 <span id="L2233"><span class="lineNum">    2233</span>              :     // configures a sql statement to use correct table by replacing :table with that one from</span>
 <span id="L2234"><span class="lineNum">    2234</span>              :     // configuration and put it in double quotes.</span>
 <span id="L2235"><span class="lineNum">    2235</span>              :     // e.g. 'select * from :table' =&gt; 'select * from &quot;unnamed&quot;'</span>
-<span id="L2236"><span class="lineNum">    2236</span> <span class="tlaGNC">      357938 :     std::string sql(const std::string&amp; sql) const</span></span>
+<span id="L2236"><span class="lineNum">    2236</span> <span class="tlaGNC">      349922 :     std::string sql(const std::string&amp; sql) const</span></span>
 <span id="L2237"><span class="lineNum">    2237</span>              :     {</span>
-<span id="L2238"><span class="lineNum">    2238</span> <span class="tlaGNC">      357938 :         const std::string placeholder = &quot;:table&quot;;</span></span>
-<span id="L2239"><span class="lineNum">    2239</span> <span class="tlaGNC">      357938 :         const std::string replacement = &quot;\&quot;&quot; + _config.table() + &quot;\&quot;&quot;;</span></span>
-<span id="L2240"><span class="lineNum">    2240</span> <span class="tlaGNC">      357938 :         std::string output = sql;</span></span>
+<span id="L2238"><span class="lineNum">    2238</span> <span class="tlaGNC">      349922 :         const std::string placeholder = &quot;:table&quot;;</span></span>
+<span id="L2239"><span class="lineNum">    2239</span> <span class="tlaGNC">      349922 :         const std::string replacement = &quot;\&quot;&quot; + _config.table() + &quot;\&quot;&quot;;</span></span>
+<span id="L2240"><span class="lineNum">    2240</span> <span class="tlaGNC">      349922 :         std::string output = sql;</span></span>
 <span id="L2241"><span class="lineNum">    2241</span>              : </span>
-<span id="L2242"><span class="lineNum">    2242</span> <span class="tlaGNC">      357938 :         size_t pos = 0;</span></span>
-<span id="L2243"><span class="lineNum">    2243</span> <span class="tlaGNC">      715876 :         while ((pos = output.find(placeholder, pos)) != std::string::npos)</span></span>
+<span id="L2242"><span class="lineNum">    2242</span> <span class="tlaGNC">      349922 :         size_t pos = 0;</span></span>
+<span id="L2243"><span class="lineNum">    2243</span> <span class="tlaGNC">      699844 :         while ((pos = output.find(placeholder, pos)) != std::string::npos)</span></span>
 <span id="L2244"><span class="lineNum">    2244</span>              :         {</span>
-<span id="L2245"><span class="lineNum">    2245</span> <span class="tlaGNC">      357938 :             output.replace(pos, placeholder.length(), replacement);</span></span>
-<span id="L2246"><span class="lineNum">    2246</span> <span class="tlaGNC">      357938 :             pos += replacement.length();</span></span>
+<span id="L2245"><span class="lineNum">    2245</span> <span class="tlaGNC">      349922 :             output.replace(pos, placeholder.length(), replacement);</span></span>
+<span id="L2246"><span class="lineNum">    2246</span> <span class="tlaGNC">      349922 :             pos += replacement.length();</span></span>
 <span id="L2247"><span class="lineNum">    2247</span>              :         }</span>
 <span id="L2248"><span class="lineNum">    2248</span>              : </span>
-<span id="L2249"><span class="lineNum">    2249</span> <span class="tlaGNC">      715876 :         return output;</span></span>
-<span id="L2250"><span class="lineNum">    2250</span> <span class="tlaGNC">      357938 :     }</span></span>
+<span id="L2249"><span class="lineNum">    2249</span> <span class="tlaGNC">      699844 :         return output;</span></span>
+<span id="L2250"><span class="lineNum">    2250</span> <span class="tlaGNC">      349922 :     }</span></span>
 <span id="L2251"><span class="lineNum">    2251</span>              : </span>
-<span id="L2252"><span class="lineNum">    2252</span> <span class="tlaGNC">        4439 :     logger&amp; log()</span></span>
+<span id="L2252"><span class="lineNum">    2252</span> <span class="tlaGNC">        4391 :     logger&amp; log()</span></span>
 <span id="L2253"><span class="lineNum">    2253</span>              :     {</span>
-<span id="L2254"><span class="lineNum">    2254</span> <span class="tlaGNC">        4439 :         return _logger;</span></span>
+<span id="L2254"><span class="lineNum">    2254</span> <span class="tlaGNC">        4391 :         return _logger;</span></span>
 <span id="L2255"><span class="lineNum">    2255</span>              :     }</span>
 <span id="L2256"><span class="lineNum">    2256</span>              : </span>
 <span id="L2257"><span class="lineNum">    2257</span>              :   private:</span>
