@@ -206,7 +206,7 @@ TEST_CASE("custom codecs used in iterator", "[codecs]")
     REQUIRE(pf3->first == point{3, 0, 30});
 
     int summed_rating = 0;
-    for (auto [p, f] : sm)
+    for (const auto& [p, f] : sm)
     {
         std::cout << point::to_string(p) << " : " << feature::to_string(f) << std::endl;
         summed_rating += f.rating;
@@ -301,7 +301,7 @@ TEST_CASE("what happens when sqlitemap is opened with wrong storage type?", "[co
     }
 }
 
-TEST_CASE("use std::variant to store diffent type in one table")
+TEST_CASE("use std::variant to store different types in one table")
 {
     auto encode = [](const std::variant<int, std::string>& value)
     {

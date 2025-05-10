@@ -1,8 +1,11 @@
-find_path(UTF8CPP_INCLUDE_DIR "utf8cpp/utf8.h")
+set(INCLUDES_FOR_EXAMPLES ../include)
 
-set(INCLUDES_FOR_EXAMPLES ../include UTF8CPP_INCLUDE_DIR)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(utf8cpp CONFIG REQUIRED)
 set(LIBS_FOR_EXAMPLES 
     unofficial::sqlite3::sqlite3
+    nlohmann_json::nlohmann_json
+    utf8cpp::utf8cpp
 )
 
 function(create_example_binary bin_name cpp_file)
@@ -20,6 +23,7 @@ endfunction()
 
 create_example_binary(sqlitemap sqlitemap_client.cpp)
 create_example_binary(lines2sqlitemap lines_to_sqlitemap.cpp)
+create_example_binary(sqlitemap_json sqlitemap_json.cpp)
 create_example_binary(sqlitemap_tiles sqlitemap_tiles.cpp)
 
 
