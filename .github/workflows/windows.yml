@@ -36,6 +36,7 @@ jobs:
         name: binaries
         path: |
           .\build\examples\Release\sqlitemap.exe
+          .\build\examples\Release\sqlitemap_json.exe
           .\build\examples\Release\sqlitemap_tiles.exe
           .\build\examples\Release\lines2sqlitemap.exe
           .\build\test\Release\tests.exe

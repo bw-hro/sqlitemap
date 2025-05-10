@@ -338,8 +338,9 @@ int main()
 }
 ```
 
-
-[sqlitemap_tiles.cpp](examples/sqlitemap_tiles.cpp) demonstrates how to use **sqlitemap** with custom data types stored as blobs. Please make sure to also inspect [sqlitemap_codecs_tests.cpp](test/catch2/unit_tests/sqlitemap_codecs_tests.cpp) were further details regarding encoding/decoding using codecs are covered.
+- [sqlitemap_json.cpp](examples/sqlitemap_json.cpp) demonstrates how to use **sqlitemap** with custom data types stored as json string using [nlohmann::json](https://github.com/nlohmann/json).
+- [sqlitemap_tiles.cpp](examples/sqlitemap_tiles.cpp) demonstrates how to use **sqlitemap** with custom data types stored as blobs.
+- Please make sure to also inspect [sqlitemap_codecs_tests.cpp](test/catch2/unit_tests/sqlitemap_codecs_tests.cpp) were further details regarding encoding/decoding using codecs are covered.
 
 ## Tests / Examples / Additional Documentation
 

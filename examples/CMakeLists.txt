@@ -20,6 +20,7 @@ endfunction()
 
 create_example_binary(sqlitemap sqlitemap_client.cpp)
 create_example_binary(lines2sqlitemap lines_to_sqlitemap.cpp)
+create_example_binary(sqlitemap_json sqlitemap_json.cpp)
 create_example_binary(sqlitemap_tiles sqlitemap_tiles.cpp)
 
 
