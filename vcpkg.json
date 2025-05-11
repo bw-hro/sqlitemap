@@ -4,6 +4,7 @@
   "dependencies": [
     "bw-tempdir",
     "catch2",
+    "cereal",
     "nlohmann-json",
     "sqlite3",
     "utfcpp"
