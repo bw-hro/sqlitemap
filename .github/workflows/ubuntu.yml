@@ -28,6 +28,7 @@ jobs:
         chmod +x ./build.sh
         ./build.sh clean release
         chmod +x ./build/examples/sqlitemap
+        chmod +x ./build/examples/sqlitemap_cereal
         chmod +x ./build/examples/sqlitemap_json
         chmod +x ./build/examples/sqlitemap_tiles
         chmod +x ./build/examples/lines2sqlitemap
@@ -39,6 +40,7 @@ jobs:
         name: binaries
         path: |
           ./build/examples/sqlitemap
+          ./build/examples/sqlitemap_cereal
           ./build/examples/sqlitemap_json
           ./build/examples/sqlitemap_tiles
           ./build/examples/lines2sqlitemap
