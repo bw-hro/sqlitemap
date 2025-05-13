@@ -1,16 +1,17 @@
 cmake_minimum_required(VERSION 3.15)
 cmake_policy(SET CMP0091 NEW)
 
-message(STATUS "Read contents from vcpkg.json")
-file(READ "${CMAKE_SOURCE_DIR}/vcpkg.json" VCPKG_JSON_CONTENT)
+set(SQLITEMAP_VCPKG_JSON "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg.json")
+message(STATUS "Read contents from ${SQLITEMAP_VCPKG_JSON}")
+file(READ ${SQLITEMAP_VCPKG_JSON} VCPKG_JSON_CONTENT)
 
-message(STATUS "Extract version from vcpkg.json")
+message(STATUS "Extract version from ${SQLITEMAP_VCPKG_JSON}")
 string(REGEX MATCH "\"version-string\"[ \t]*:[ \t]*\"([^\"]+)\"" VERSION_MATCH "${VCPKG_JSON_CONTENT}")
 if (VERSION_MATCH)
     string(REGEX REPLACE "\"version-string\"[ \t]*:[ \t]*\"([^\"]+)\"" "\\1" SQLITEMAP_VERSION "${VERSION_MATCH}")
-    message(STATUS "Extracted version from vcpkg.json: ${SQLITEMAP_VERSION}")
+    message(STATUS "Extracted version from ${SQLITEMAP_VCPKG_JSON}: ${SQLITEMAP_VERSION}")
 else()
-    message(FATAL_ERROR "Could not extract version from vcpkg.json")
+    message(FATAL_ERROR "Could not extract version from ${SQLITEMAP_VCPKG_JSON}")
 endif()
 
 project(sqlitemap VERSION ${SQLITEMAP_VERSION} DESCRIPTION "sqlitemap is a lightweight wrapper around SQLite providing a map like interface" LANGUAGES CXX)
