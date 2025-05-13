@@ -35,7 +35,7 @@ The library is implemented as a **single-header** file, making integration easy 
 
 ### CMake
 
-Example of a minimal CMake setup using FetchContent to obtain **sqlitemap**
+Example of a minimal CMake setup using **FetchContent** to obtain **sqlitemap**
 
 ```cmake
 cmake_minimum_required(VERSION 3.15)
@@ -55,6 +55,26 @@ FetchContent_MakeAvailable(sqlitemap)
 # First install SQLite3 on your system
 # e.g. 'sudo apt install libsqlite3-dev'
 find_package(SQLite3 REQUIRED)
+
+add_executable(sqlitemap-consumer main.cpp)
+target_include_directories(sqlitemap-consumer PRIVATE "${sqlitemap_SOURCE_DIR}/include")
+target_link_libraries(sqlitemap-consumer PRIVATE SQLite::SQLite3)
+```
+Example of a minimal CMake setup using **CPM.cmake** to obtain **sqlitemap**
+
+```cmake
+cmake_minimum_required(VERSION 3.15)
+project(sqlitemap-consumer)
+set(CMAKE_CXX_STANDARD 17)
+
+# make CPM.cmake available
+set(CPM_DIR "${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake")
+file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/latest/download/get_cpm.cmake ${CPM_DIR})
+include(${CPM_DIR})
+
+# add sqlitemap and SQLite dependencies
+CPMAddPackage(URI "gh:bw-hro/sqlitemap@1.1.0" DOWNLOAD_ONLY YES)
+CPMAddPackage("gh:sjinks/sqlite3-cmake@3.49.1")
 
 add_executable(sqlitemap-consumer main.cpp)
 target_include_directories(sqlitemap-consumer PRIVATE "${sqlitemap_SOURCE_DIR}/include")
