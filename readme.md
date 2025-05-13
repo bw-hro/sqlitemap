@@ -26,13 +26,44 @@ The library is implemented as a **single-header** file, making integration easy 
 
 ## Installation
 
-- Just include the [sqlitemap.hpp](https://github.com/bw-hro/sqlitemap/releases/latest/download/sqlitemap.hpp) file into your project source files:
+- Just add the [sqlitemap.hpp](https://github.com/bw-hro/sqlitemap/releases/latest/download/sqlitemap.hpp) header to your project include files:
 - Make sure that [SQLite](https://sqlite.org) is available
 
 ```c++
 #include <bw/sqlitemap/sqlitemap.hpp>
 ```
-You can also use the *vcpkg* port `bw-sqlitemap`
+
+### CMake
+
+Example of a minimal CMake setup using FetchContent to obtain **sqlitemap**
+
+```cmake
+cmake_minimum_required(VERSION 3.15)
+project(sqlitemap-consumer)
+set(CMAKE_CXX_STANDARD 17)
+
+# Declare and fetch sqlitemap library
+include(FetchContent)
+FetchContent_Declare(
+        sqlitemap
+        GIT_REPOSITORY https://github.com/bw-hro/sqlitemap.git
+        GIT_TAG v1.1.0 # replace with desired version / branch
+        SOURCE_SUBDIR "include" # sqlitemap is single header only
+)
+FetchContent_MakeAvailable(sqlitemap)
+
+# First install SQLite3 on your system
+# e.g. 'sudo apt install libsqlite3-dev'
+find_package(SQLite3 REQUIRED)
+
+add_executable(sqlitemap-consumer main.cpp)
+target_include_directories(sqlitemap-consumer PRIVATE "${sqlitemap_SOURCE_DIR}/include")
+target_link_libraries(sqlitemap-consumer PRIVATE SQLite::SQLite3)
+```
+
+### vcpkg
+
+You can also use the *vcpkg* port `bw-sqlitemap` which handles all dependencies for you
 
 ```sh
 vcpkg install bw-sqlitemap
