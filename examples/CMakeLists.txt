@@ -3,11 +3,13 @@ set(INCLUDES_FOR_EXAMPLES ../include)
 find_package(cereal CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(utf8cpp CONFIG REQUIRED)
+find_package(ZLIB REQUIRED)
 set(LIBS_FOR_EXAMPLES
     unofficial::sqlite3::sqlite3
     cereal::cereal
     nlohmann_json::nlohmann_json
     utf8cpp::utf8cpp
+    ZLIB::ZLIB
 )
 
 function(create_example_binary bin_name cpp_file)
@@ -28,5 +30,6 @@ create_example_binary(lines2sqlitemap lines_to_sqlitemap.cpp)
 create_example_binary(sqlitemap_cereal sqlitemap_cereal.cpp)
 create_example_binary(sqlitemap_json sqlitemap_json.cpp)
 create_example_binary(sqlitemap_tiles sqlitemap_tiles.cpp)
+create_example_binary(sqlitemap_zlib sqlitemap_zlib.cpp)
 
 

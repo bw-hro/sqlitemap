@@ -7,6 +7,7 @@
     "cereal",
     "nlohmann-json",
     "sqlite3",
-    "utfcpp"
+    "utfcpp",
+    "zlib"
   ]
 }
