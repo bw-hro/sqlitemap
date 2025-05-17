@@ -31,6 +31,7 @@ jobs:
         chmod +x ./build/examples/sqlitemap_cereal
         chmod +x ./build/examples/sqlitemap_json
         chmod +x ./build/examples/sqlitemap_tiles
+        chmod +x ./build/examples/sqlitemap_zlib
         chmod +x ./build/examples/lines2sqlitemap
         chmod +x ./build/test/tests
 
@@ -43,5 +44,6 @@ jobs:
           ./build/examples/sqlitemap_cereal
           ./build/examples/sqlitemap_json
           ./build/examples/sqlitemap_tiles
+          ./build/examples/sqlitemap_zlib
           ./build/examples/lines2sqlitemap
           ./build/test/tests

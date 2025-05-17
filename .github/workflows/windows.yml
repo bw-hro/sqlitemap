@@ -39,5 +39,6 @@ jobs:
           .\build\examples\Release\sqlitemap_cereal.exe
           .\build\examples\Release\sqlitemap_json.exe
           .\build\examples\Release\sqlitemap_tiles.exe
+          .\build\examples\Release\sqlitemap_zlib.exe
           .\build\examples\Release\lines2sqlitemap.exe
           .\build\test\Release\tests.exe
