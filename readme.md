@@ -8,9 +8,12 @@
 [![CI Windows](https://github.com/bw-hro/sqlitemap/actions/workflows/windows.yml/badge.svg?branch=main)](https://github.com/bw-hro/sqlitemap/actions/workflows/windows.yml)
 [![CI macOS](https://github.com/bw-hro/sqlitemap/actions/workflows/macos.yml/badge.svg?branch=main)](https://github.com/bw-hro/sqlitemap/actions/workflows/macos.yml)
 [![code coverage](https://bw-hro.github.io/sqlitemap/coverage-report/badge.svg)](https://bw-hro.github.io/sqlitemap/coverage-report)
+
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)]()
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/bw-hro/sqlitemap/main/LICENSE.txt)
 [![GitHub Releases](https://img.shields.io/github/release/bw-hro/sqlitemap.svg)](https://github.com/bw-hro/sqlitemap/releases)
 [![Vcpkg Version](https://img.shields.io/vcpkg/v/bw-sqlitemap)](https://vcpkg.link/ports/bw-sqlitemap)
+[![Conan Version](https://img.shields.io/conan/v/sqlitemap)](https://conan.io/center/recipes/sqlitemap)
 
 **sqlitemap** is a lightweight C++ wrapper around SQLite that provides a simple, map-like interface.  
 It’s designed to make working with key-value storage easy and convenient — similar to how [sqlitedict](https://github.com/piskvorky/sqlitedict) works in the Python world.
@@ -22,7 +25,8 @@ The library is implemented as a **single-header** file, making integration easy 
 - Easy-to-use map-like interface in C++
 - Transactions
 - Custom encoding/decoding
-- Minimal dependencies (just requires [SQLite](https://sqlite.org))
+- Minimal dependencies (just requires [SQLite](https://sqlite.org)) 
+- Please refer to the [Usage](#usage) section below for more details
 
 ## Installation
 
@@ -100,7 +104,31 @@ or add dependency to *vcpkg.json* manifest file
   ]
 }
 ```
+### conan
 
+You can also use the *conan* recipe `sqlitemap` which handles all dependencies for you.
+Assuming you use cmake, just add the following to *conanfile.txt*
+
+```
+[requires]
+sqlitemap/[>=1.1.0]
+
+[generators]
+CMakeDeps
+CMakeToolchain
+```
+
+and to *CMakeLists.txt*
+ 
+```cmake
+cmake_minimum_required(VERSION 3.15)
+project(sqlitemap-consumer)
+
+find_package(sqlitemap REQUIRED)
+
+add_executable(${PROJECT_NAME} src/main.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE sqlitemap::sqlitemap)
+```
 
 ## Usage
 
