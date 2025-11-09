@@ -476,8 +476,8 @@ template <typename IN_T, typename OUT_T> struct codec
     using in_type = IN_T;
     using out_type = OUT_T;
 
-    const std::function<OUT_T(const IN_T&)> encode;
-    const std::function<IN_T(const OUT_T&)> decode;
+    std::function<OUT_T(const IN_T&)> encode;
+    std::function<IN_T(const OUT_T&)> decode;
 };
 
 struct key_codec_tag
@@ -606,8 +606,8 @@ template <typename KC, typename VC> struct codec_pair
     using value_in_type = typename VC::in_type;
     using value_out_type = typename VC::out_type;
 
-    const KC key_codec;
-    const VC value_codec;
+    KC key_codec;
+    VC value_codec;
 };
 
 template <typename T> struct is_codec_pair : std::false_type
@@ -1467,13 +1467,44 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
     {
         try
         {
-            close();
+            if (db != nullptr)
+            {
+                close();
+            }
         }
         catch (std::exception& ex)
         {
             log().error(std::string("Descruction of sqlitemap failed. Error: ") + ex.what());
         }
     }
+
+    sqlitemap(sqlitemap&& other) noexcept
+        : _config(std::move(other._config))
+        , _in_temp(other._in_temp)
+        , _logger(std::move(other._logger))
+        , db(other.db)
+    {
+        other.db = nullptr;
+        log().debug("sqlitemap moved successfully");
+    }
+
+    sqlitemap& operator=(sqlitemap&& other) noexcept
+    {
+        if (this != &other)
+        {
+            _config = std::move(other._config);
+            _in_temp = other._in_temp;
+            _logger = std::move(other._logger);
+            db = other.db;
+            other.db = nullptr;
+            log().debug("sqlitemap move assigned successfully");
+        }
+        return *this;
+    }
+
+    // disable copy constructor and assignment operator
+    sqlitemap(const sqlitemap&) = delete;
+    sqlitemap& operator=(const sqlitemap&) = delete;
 
     void open_database(const std::string& file)
     {
@@ -2013,7 +2044,7 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
 
         // Close the database connection
         sqlite3_close(db);
-        log().debug("Database closed");
+        log().debug("Database '" + config().filename() + "' closed");
 
         if (in_temp())
         {

@@ -52,6 +52,102 @@ TEST_CASE("sqlitemap assignment")
     REQUIRE((sqlitemap(file.string(), "cache", operation_mode::r).get("app-1") == "123"));
 }
 
+TEST_CASE("sqlitemap move constructor and assignment")
+{
+    TempDir temp_dir(Config().enable_logging());
+    auto file = (temp_dir.path() / "db.sqlite").string();
+
+    sqlitemap sm1(config().filename(file).log_level(log_level::trace));
+    sm1.set("k1", "v1");
+    sm1.commit();
+
+    {
+        // move constructor
+        sqlitemap sm2(std::move(sm1));
+        REQUIRE(sm2.size() == 1);
+        REQUIRE((sm2["k1"] == "v1"));
+        sm2.set("k2", "v2");
+        sm2.commit();
+
+        // move assignment
+        sqlitemap sm3;
+        sm3 = std::move(sm2);
+        REQUIRE(sm3.size() == 2);
+        REQUIRE((sm3["k1"] == "v1"));
+        REQUIRE((sm3["k2"] == "v2"));
+        sm3.set("k3", "v3");
+        sm3.commit();
+    }
+
+    sqlitemap sm4(config().filename(file).log_level(log_level::trace));
+    REQUIRE(sm4.size() == 3);
+    REQUIRE((sm4["k1"] == "v1"));
+    REQUIRE((sm4["k2"] == "v2"));
+    REQUIRE((sm4["k3"] == "v3"));
+    sm4.set("k4", "v4");
+    sm4.commit();
+
+    // move assignment, reuse sm1, which was moved from before
+    sm1 = std::move(sm4);
+    REQUIRE(sm1.size() == 4);
+    REQUIRE((sm1["k1"] == "v1"));
+    REQUIRE((sm1["k2"] == "v2"));
+    REQUIRE((sm1["k3"] == "v3"));
+    REQUIRE((sm1["k4"] == "v4"));
+}
+
+TEST_CASE("sqlitemap can be stored in a std::vector")
+{
+    TempDir temp_dir(Config().enable_logging());
+    auto file1 = (temp_dir.path() / "db1.sqlite").string();
+    auto file2 = (temp_dir.path() / "db2.sqlite").string();
+
+    std::vector<sqlitemap<>> db_vector;
+    db_vector.emplace_back(config().filename(file1).log_level(log_level::debug));
+    db_vector.push_back(sqlitemap(config().filename(file2).log_level(log_level::debug)));
+
+    db_vector[0].set("k1", "v1");
+    db_vector[0].commit();
+
+    auto& db2 = db_vector[1];
+    db2.set("k2", "v2");
+    db2.commit();
+
+    for (auto& db : db_vector)
+    {
+        db.set("loop_key", "loop_value");
+        db.commit();
+    }
+
+    REQUIRE(db_vector[0].get("k1") == "v1");
+    REQUIRE(db_vector[0].get("loop_key") == "loop_value");
+
+    REQUIRE((db2["k2"] == "v2"));
+    REQUIRE((db2["loop_key"] == "loop_value"));
+}
+
+TEST_CASE("sqlitemap can be stored in a std::map")
+{
+    TempDir temp_dir(Config().enable_logging());
+    auto file1 = (temp_dir.path() / "db1.sqlite").string();
+    auto file2 = (temp_dir.path() / "db2.sqlite").string();
+
+    std::map<std::string, sqlitemap<>> db_map;
+
+    db_map["first"] = sqlitemap<>(config().filename(file1).log_level(log_level::debug));
+    db_map["second"] = sqlitemap<>(config().filename(file2).log_level(log_level::debug));
+
+    db_map["first"].set("k1", "v1");
+    db_map["first"].commit();
+
+    auto& db2 = db_map["second"];
+    db2.set("k2", "v2");
+    db2.commit();
+
+    REQUIRE(db_map["first"].get("k1") == "v1");
+    REQUIRE((db2["k2"] == "v2"));
+}
+
 TEST_CASE("sqlitemap can be represented as string")
 {
     sqlitemap sm(config().filename(":memory:"));
