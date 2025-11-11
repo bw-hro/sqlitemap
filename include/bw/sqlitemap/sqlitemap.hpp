@@ -692,7 +692,7 @@ template <typename CODEC_PAIR> class configuration
                       "CODEC_PAIR must be a specialization of codec_pair<KC, VC>");
     }
 
-    CODEC_PAIR codecs() const
+    const CODEC_PAIR& codecs() const
     {
         return _codecs;
     }
