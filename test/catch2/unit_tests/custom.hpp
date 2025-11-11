@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: 2024-present Benno Waldhauer
 // SPDX-License-Identifier: MIT
 
+#pragma once
+
 #include <sstream>
 #include <string>
 

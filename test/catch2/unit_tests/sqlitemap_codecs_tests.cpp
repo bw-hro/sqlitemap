@@ -6,6 +6,7 @@
 
 #include <bw/tempdir/tempdir.hpp>
 
+#include "conversion_functor.hpp"
 #include "custom.hpp"
 #include <bw/sqlitemap/sqlitemap.hpp>
 
@@ -218,6 +219,57 @@ TEST_CASE("codecs can be defined by type identity function", "[codecs]")
 {
     auto kc = key_codec<int>();
     auto vc = value_codec<double>();
+
+    auto sm = sqlitemap(config(kc, vc));
+
+    REQUIRE_NOTHROW(sm.set(42, 0.1234));
+    REQUIRE(sm.get(42) == Catch::Approx(0.1234));
+
+    REQUIRE_NOTHROW(sm.del(42));
+    REQUIRE_THROWS_AS(sm.get(42), sqlitemap_error);
+
+    REQUIRE_NOTHROW(sm.insert({{1, 9.111}, {2, 8.222}, {3, 7.333}}));
+    REQUIRE(sm.get(1) == Catch::Approx(9.111));
+    REQUIRE(sm.get(2) == Catch::Approx(8.222));
+    REQUIRE(sm.get(3) == Catch::Approx(7.333));
+}
+
+TEST_CASE("codecs can be definded by functor objects", "[codecs]")
+{
+    using namespace bw::testhelper;
+
+    // clang-format off
+    struct key_codec_encode_functor : public conversion_functor<int, std::string>
+    {
+        key_codec_encode_functor(): conversion_functor<int, std::string>(
+            "KEY_ENCODE_FUNCTOR", [](int key){ return "key-" + std::to_string(key); })
+        {}
+    };
+    
+    struct key_codec_decode_functor : public conversion_functor<std::string, int>
+    {
+        key_codec_decode_functor(): conversion_functor<std::string, int>(
+            "KEY_DECODE_FUNCTOR", [](std::string key_str){ return std::atoi(key_str.substr(4).c_str()); })
+        {}
+    };
+
+    struct value_codec_encode_functor : public conversion_functor<double, std::string>
+    {
+        value_codec_encode_functor(): conversion_functor<double, std::string>(
+            "VALUE_ENCODE_FUNCTOR", [](double value){ return "value-" +  std::to_string(value); })
+        {}
+    };
+
+    struct value_codec_decode_functor : public conversion_functor<std::string, double>
+    {
+        value_codec_decode_functor(): conversion_functor<std::string, double>(
+            "VALUE_DECODE_FUNCTOR", [](std::string value_str){ return std::atof(value_str.substr(6).c_str()); })
+        {}
+    };
+    // clang-format on
+
+    auto kc = key_codec(std::move(key_codec_encode_functor{}), key_codec_decode_functor{});
+    auto vc = value_codec(value_codec_encode_functor{}, value_codec_decode_functor{});
 
     auto sm = sqlitemap(config(kc, vc));
 
