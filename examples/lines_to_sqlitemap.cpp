@@ -19,7 +19,7 @@ class processor
 {
     using key_type = long long;
     using value_type = std::string;
-    using DB = sm::sqlitemap<decltype(sm::config<key_type, value_type>().codecs())>;
+    using DB = sm::sqlitemap_t<key_type, value_type>;
 
   public:
     processor(const std::string& file, const std::string& table, bool echo = true)

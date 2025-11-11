@@ -1341,7 +1341,7 @@ template <typename K, typename V> struct sqlitemap_node_type
  * results. As a result, iterators returned by STL-like operations are intended solely for data
  * access; advancing or reusing them in multiple passes is not supported.
  */
-template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
+template <typename CODEC_PAIR = std::decay_t<decltype(config().codecs())>> class sqlitemap
 {
   public:
     using key_type = typename CODEC_PAIR::key_in_type;
@@ -2291,5 +2291,182 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
     bool _in_temp = false;
     logger _logger;
 };
+
+// Helper alias templates for sqlitemap with different number of template arguments
+
+struct sqlitemap_alias_no_arg
+{
+    using codec_pair = std::decay_t<decltype(config().codecs())>;
+    using type = sqlitemap<codec_pair>;
+};
+
+// clang-format off
+
+template <typename CODEC_ARG, typename Enable = void> struct sqlitemap_alias_1_arg;
+
+// argument is a codec pair, key codec or value codec
+template <typename CODEC_ARG> struct sqlitemap_alias_1_arg<CODEC_ARG, std::enable_if_t<
+    codecs::is_codec_pair<std::decay_t<CODEC_ARG>>::value>>
+{
+    using type = sqlitemap<std::decay_t<CODEC_ARG>>;
+};
+
+// argument is a key codec
+template <typename CODEC_ARG> struct sqlitemap_alias_1_arg<CODEC_ARG, std::enable_if_t<
+    codecs::is_key_codec<std::decay_t<CODEC_ARG>>::value>>
+{
+    using value_codec_t = decltype(default_value_codec);
+    using type = sqlitemap<codecs::codec_pair<std::decay_t<CODEC_ARG>, value_codec_t>>;
+};
+
+// argument is a value codec
+template <typename CODEC_ARG> struct sqlitemap_alias_1_arg<CODEC_ARG, std::enable_if_t<
+    codecs::is_value_codec<std::decay_t<CODEC_ARG>>::value>>
+{
+    using key_codec_t = decltype(default_key_codec);
+    using type = sqlitemap<codecs::codec_pair<key_codec_t, std::decay_t<CODEC_ARG>>>;
+};
+
+// argument is not a codec pair, key codec or value codec, but a value type
+template <typename CODEC_ARG> struct sqlitemap_alias_1_arg<CODEC_ARG, std::enable_if_t<
+!(
+    codecs::is_codec_pair<std::decay_t<CODEC_ARG>>::value ||
+    codecs::is_key_codec<std::decay_t<CODEC_ARG>>::value  ||
+    codecs::is_value_codec<std::decay_t<CODEC_ARG>>::value
+)>>
+{
+    using key_codec_t = decltype(default_key_codec);
+    using value_codec_out_t = std::conditional_t<details::has_native_sqlite_support<CODEC_ARG>(),CODEC_ARG, std::string>;
+    using value_codec_t = codecs::value_codec<CODEC_ARG, value_codec_out_t>;
+    using type = sqlitemap<codecs::codec_pair<key_codec_t, value_codec_t>>;
+};
+
+
+// two arguments: key codec and value codec
+
+template <typename KEY_CODEC, typename VALUE_CODEC, typename Enable = void>
+struct sqlitemap_alias_2_arg;
+
+template <typename KEY_CODEC, typename VALUE_CODEC>
+struct sqlitemap_alias_2_arg<KEY_CODEC, VALUE_CODEC, std::enable_if_t<
+(
+    codecs::is_key_codec<std::decay_t<KEY_CODEC>>::value &&
+    codecs::is_value_codec<std::decay_t<VALUE_CODEC>>::value
+)>>
+{
+    using decayed_key_t = std::decay_t<KEY_CODEC>;
+    using decayed_value_t = std::decay_t<VALUE_CODEC>;
+
+    // require that the user really provided a key codec and a value codec
+    static_assert(codecs::is_key_codec<decayed_key_t>::value,
+                  "sqlitemap_alias_2_arg: KEY_CODEC must be a key codec");
+    static_assert(codecs::is_value_codec<decayed_value_t>::value,
+                  "sqlitemap_alias_2_arg: VALUE_CODEC must be a value codec");
+
+    using type = sqlitemap<codecs::codec_pair<decayed_key_t, decayed_value_t>>;
+};
+
+template <typename KEY_CODEC, typename VALUE_CODEC>
+struct sqlitemap_alias_2_arg<KEY_CODEC, VALUE_CODEC, std::enable_if_t<
+(
+    details::has_native_sqlite_support<std::decay_t<KEY_CODEC>>() &&
+    codecs::is_value_codec<std::decay_t<VALUE_CODEC>>::value
+)>>
+{
+    using decayed_key_t = std::decay_t<KEY_CODEC>;
+    using decayed_value_t = std::decay_t<VALUE_CODEC>;
+    using key_codec_t = codecs::key_codec<decayed_key_t, decayed_key_t>;
+    using type = sqlitemap<codecs::codec_pair<key_codec_t, decayed_value_t>>;
+};
+
+template <typename KEY_CODEC, typename VALUE_CODEC>
+struct sqlitemap_alias_2_arg<KEY_CODEC, VALUE_CODEC, std::enable_if_t<
+(
+    codecs::is_key_codec<std::decay_t<KEY_CODEC>>::value &&
+    details::has_native_sqlite_support<std::decay_t<VALUE_CODEC>>()
+)>>
+{
+    using decayed_key_t = std::decay_t<KEY_CODEC>;
+    using decayed_value_t = std::decay_t<VALUE_CODEC>;
+    using value_codec_t = codecs::value_codec<decayed_value_t, decayed_value_t>;
+    using type = sqlitemap<codecs::codec_pair<decayed_key_t, value_codec_t>>;
+};
+
+template <typename KEY_TYPE, typename VALUE_TYPE>
+struct sqlitemap_alias_2_arg<KEY_TYPE, VALUE_TYPE, std::enable_if_t<
+(
+    details::has_native_sqlite_support<std::decay_t<KEY_TYPE>>() &&
+    details::has_native_sqlite_support<std::decay_t<VALUE_TYPE>>()
+)>>
+{
+    using decayed_key_t = std::decay_t<KEY_TYPE>;
+    using decayed_value_t = std::decay_t<VALUE_TYPE>;
+    using key_codec_t = codecs::key_codec<decayed_key_t, decayed_key_t>;
+    using value_codec_t = codecs::value_codec<decayed_value_t, decayed_value_t>;
+    using type = sqlitemap<codecs::codec_pair<key_codec_t, value_codec_t>>;
+};
+
+// clang-format on
+
+template <typename... Ts> struct sqlitemap_t_helper;
+
+template <> struct sqlitemap_t_helper<>
+{
+    using type = typename sqlitemap_alias_no_arg::type;
+};
+
+template <typename T> struct sqlitemap_t_helper<T>
+{
+    using type = typename sqlitemap_alias_1_arg<T>::type;
+};
+
+template <typename K, typename V> struct sqlitemap_t_helper<K, V>
+{
+    using type = typename sqlitemap_alias_2_arg<K, V>::type;
+};
+
+template <typename... Ts> using sqlitemap_t = typename sqlitemap_t_helper<Ts...>::type;
+
+// Helper alias templates for value_codec
+
+template <typename... Ts> struct value_codec_t_helper;
+
+template <> struct value_codec_t_helper<>
+{
+    using type = decltype(default_value_codec);
+};
+
+template <typename IN_OUT_T> struct value_codec_t_helper<IN_OUT_T>
+{
+    using type = codecs::value_codec<IN_OUT_T, IN_OUT_T>;
+};
+
+template <typename IN_T, typename OUT_T> struct value_codec_t_helper<IN_T, OUT_T>
+{
+    using type = codecs::value_codec<IN_T, OUT_T>;
+};
+
+template <typename... Ts> using value_codec_t = typename value_codec_t_helper<Ts...>::type;
+
+// Helper alias templates for key_codec
+
+template <typename... Ts> struct key_codec_t_helper;
+
+template <> struct key_codec_t_helper<>
+{
+    using type = decltype(default_key_codec);
+};
+
+template <typename IN_OUT_T> struct key_codec_t_helper<IN_OUT_T>
+{
+    using type = codecs::key_codec<IN_OUT_T, IN_OUT_T>;
+};
+
+template <typename IN_T, typename OUT_T> struct key_codec_t_helper<IN_T, OUT_T>
+{
+    using type = codecs::key_codec<IN_T, OUT_T>;
+};
+
+template <typename... Ts> using key_codec_t = typename key_codec_t_helper<Ts...>::type;
 
 } // namespace bw::sqlitemap

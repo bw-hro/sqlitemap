@@ -25,8 +25,7 @@ TEST_CASE("sqlitemap assignment")
     auto sm_ptr = std::make_unique<sqlitemap<>>();
 
     // as unique_ptr with custom codecs
-    using codec_pair = decltype(config<int, double>().codecs());
-    auto smc_ptr = std::make_unique<sqlitemap<codec_pair>>(config<int, double>());
+    auto smc_ptr = std::make_unique<sqlitemap_t<int, double>>(config<int, double>());
 
     // as member of a class
     class App
