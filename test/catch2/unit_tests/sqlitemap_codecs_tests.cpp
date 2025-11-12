@@ -268,10 +268,9 @@ TEST_CASE("codecs can be definded by functor objects", "[codecs]")
     };
     // clang-format on
 
-    auto kc = key_codec(std::move(key_codec_encode_functor{}), key_codec_decode_functor{});
+    auto kc = key_codec(key_codec_encode_functor{}, key_codec_decode_functor{});
     auto vc = value_codec(value_codec_encode_functor{}, value_codec_decode_functor{});
-
-    auto sm = sqlitemap(config(kc, vc));
+    sqlitemap sm(config(kc, vc));
 
     REQUIRE_NOTHROW(sm.set(42, 0.1234));
     REQUIRE(sm.get(42) == Catch::Approx(0.1234));

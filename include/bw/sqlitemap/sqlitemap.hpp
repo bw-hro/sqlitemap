@@ -490,7 +490,8 @@ struct key_codec : public codec<IN_T, OUT_T>, public key_codec_tag
     using codec<IN_T, OUT_T>::codec;
 
     key_codec(std::function<OUT_T(const IN_T&)> encode, std::function<IN_T(const OUT_T&)> decode)
-        : codec<IN_T, OUT_T>{encode, decode}
+        : codec<IN_T, OUT_T>{std::forward<std::function<OUT_T(const IN_T&)>>(encode),
+                             std::forward<std::function<IN_T(const OUT_T&)>>(decode)}
     {
     }
 };
@@ -516,7 +517,8 @@ struct value_codec : public codec<IN_T, OUT_T>, public value_codec_tag
     using codec<IN_T, OUT_T>::codec;
 
     value_codec(std::function<OUT_T(const IN_T&)> encode, std::function<IN_T(const OUT_T&)> decode)
-        : codec<IN_T, OUT_T>{encode, decode}
+        : codec<IN_T, OUT_T>{std::forward<std::function<OUT_T(const IN_T&)>>(encode),
+                             std::forward<std::function<IN_T(const OUT_T&)>>(decode)}
     {
     }
 };
@@ -555,11 +557,13 @@ template <typename T, typename E, typename D> auto taged_codec_from(E encoder, D
 
     if constexpr (std::is_same_v<T, key_codec_tag>)
     {
-        return key_codec<std::decay_t<ea_type>, std::decay_t<er_type>>{encoder, decoder};
+        return key_codec<std::decay_t<ea_type>, std::decay_t<er_type>>{std::forward<E>(encoder),
+                                                                       std::forward<D>(decoder)};
     }
     else if constexpr (std::is_same_v<T, value_codec_tag>)
     {
-        return value_codec<std::decay_t<ea_type>, std::decay_t<er_type>>{encoder, decoder};
+        return value_codec<std::decay_t<ea_type>, std::decay_t<er_type>>{std::forward<E>(encoder),
+                                                                         std::forward<D>(decoder)};
     }
     else
     {
@@ -623,7 +627,8 @@ template <typename KC, typename VC> struct is_codec_pair<codec_pair<KC, VC>> : s
 
 template <typename E, typename D> auto key_codec(E encoder, D decoder)
 {
-    return codecs::taged_codec_from<codecs::key_codec_tag, E, D>(encoder, decoder);
+    return codecs::taged_codec_from<codecs::key_codec_tag, E, D>(std::forward<E>(encoder),
+                                                                 std::forward<D>(decoder));
 }
 
 // use identity function of type T to define a key codec
@@ -640,7 +645,8 @@ inline auto default_key_codec = key_codec<std::string>();
 
 template <typename E, typename D> auto value_codec(E encoder, D decoder)
 {
-    return codecs::taged_codec_from<codecs::value_codec_tag, E, D>(encoder, decoder);
+    return codecs::taged_codec_from<codecs::value_codec_tag, E, D>(std::forward<E>(encoder),
+                                                                   std::forward<D>(decoder));
 }
 
 // use identity function of type T to define a value codec
@@ -804,29 +810,30 @@ template <typename CODEC_PAIR> class configuration
     std::vector<std::string> _pragma_statements;
 };
 
-template <typename CODEC_PAIR> auto config(CODEC_PAIR codec)
+template <typename CODEC_ARG> auto config(CODEC_ARG codec)
 {
-    if constexpr (codecs::is_codec_pair<std::decay_t<CODEC_PAIR>>::value)
+    if constexpr (codecs::is_codec_pair<std::decay_t<CODEC_ARG>>::value)
     {
-        return configuration(codec);
+        return configuration(std::forward<CODEC_ARG>(codec));
     }
-    else if constexpr (codecs::is_key_codec<std::decay_t<CODEC_PAIR>>::value)
+    else if constexpr (codecs::is_key_codec<std::decay_t<CODEC_ARG>>::value)
     {
-        return configuration(codecs::codec_pair(codec, default_value_codec));
+        return configuration(
+            codecs::codec_pair(std::forward<CODEC_ARG>(codec), default_value_codec));
     }
-    else if constexpr (codecs::is_value_codec<std::decay_t<CODEC_PAIR>>::value)
+    else if constexpr (codecs::is_value_codec<std::decay_t<CODEC_ARG>>::value)
     {
-        return configuration(codecs::codec_pair(default_key_codec, codec));
+        return configuration(codecs::codec_pair(default_key_codec, std::forward<CODEC_ARG>(codec)));
     }
     else
     {
-        static_assert(codecs::unknown_codec_tag<CODEC_PAIR>::value, "Unknown CODEC_PAIR type");
+        static_assert(codecs::unknown_codec_tag<CODEC_ARG>::value, "Unknown CODEC_ARG type");
     }
 }
 
 template <typename KC, typename VC> auto config(KC key_codec, VC value_codec)
 {
-    return config(codecs::codec_pair(key_codec, value_codec));
+    return config(codecs::codec_pair(std::forward<KC>(key_codec), std::forward<VC>(value_codec)));
 }
 
 // Uses key type K and value type V to create configuration from
@@ -1425,7 +1432,7 @@ template <typename CODEC_PAIR = std::decay_t<decltype(config().codecs())>> class
     }
 
     sqlitemap(configuration<CODEC_PAIR> config)
-        : _config(std::move(config))
+        : _config(std::forward<configuration<CODEC_PAIR>>(config))
     {
         log().set_level(_config.log_level());
         if (_config.log_impl())
