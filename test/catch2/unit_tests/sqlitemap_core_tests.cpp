@@ -455,6 +455,49 @@ TEST_CASE("sqlitemap tries to avoid copies of configuration and codecs")
     }
 }
 
+TEST_CASE("sqlitemap configuration offers a fluent interface")
+{
+    // configure all options using rvalue method calls
+    auto cfg = config()
+                   .filename("test_db.sqlite")
+                   .table("test_table")
+                   .mode(operation_mode::w)
+                   .auto_commit(true)
+                   .log_level(log_level::debug)
+                   .log_impl([](auto level, auto msg) {})
+                   .pragma("journal_mode", "WAL")
+                   .pragma("cache_size", -64000)
+                   .pragma("temp_store = 2");
+
+    REQUIRE(cfg.filename() == "test_db.sqlite");
+    REQUIRE(cfg.table() == "test_table");
+    REQUIRE(cfg.mode() == operation_mode::w);
+    REQUIRE(cfg.auto_commit());
+    REQUIRE(cfg.log_level() == log_level::debug);
+    REQUIRE(cfg.pragmas() == std::vector<std::string>{"PRAGMA journal_mode = WAL",
+                                                      "PRAGMA cache_size = -64000",
+                                                      "PRAGMA temp_store = 2"});
+
+    // configure all options using lvalue method calls
+    auto cfg2 = config();
+    cfg2.filename("test_db2.sqlite");
+    cfg2.table("test_table2");
+    cfg2.mode(operation_mode::r);
+    cfg2.auto_commit(false);
+    cfg2.log_level(log_level::error);
+    cfg2.log_impl([](auto level, auto msg) {});
+    cfg2.pragma("cache_size", 2000);
+    cfg2.pragma("synchronous", "OFF");
+
+    REQUIRE(cfg2.filename() == "test_db2.sqlite");
+    REQUIRE(cfg2.table() == "test_table2");
+    REQUIRE(cfg2.mode() == operation_mode::r);
+    REQUIRE_FALSE(cfg2.auto_commit());
+    REQUIRE(cfg2.log_level() == log_level::error);
+    REQUIRE(cfg2.pragmas() ==
+            std::vector<std::string>{"PRAGMA cache_size = 2000", "PRAGMA synchronous = OFF"});
+}
+
 TEST_CASE("sqlitemap can be represented as string")
 {
     sqlitemap sm(config().filename(":memory:"));
