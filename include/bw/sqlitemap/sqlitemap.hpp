@@ -1,5 +1,5 @@
 // sqlitemap — Persistent Map Backed by SQLite
-// version 1.1.0
+// version 1.2.0
 // https://github.com/bw-hro/sqlitemap
 
 // SPDX-FileCopyrightText: 2024-present Benno Waldhauer
