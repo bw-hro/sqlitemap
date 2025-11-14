@@ -594,17 +594,6 @@ template <typename TAG, typename TYPE> auto taged_codec_from()
 
 template <typename KC, typename VC> struct codec_pair
 {
-    codec_pair(KC k, VC v)
-        : key_codec(k)
-        , value_codec(v)
-    {
-        static_assert(is_key_codec<std::decay_t<KC>>::value,
-                      "KC must be a specialization of key_codec<IN_T, OUT_T>");
-
-        static_assert(is_value_codec<std::decay_t<VC>>::value,
-                      "VC must be a specialization of value_codec<IN_T, OUT_T>");
-    }
-
     using key_in_type = typename KC::in_type;
     using key_out_type = typename KC::out_type;
     using value_in_type = typename VC::in_type;
@@ -612,7 +601,22 @@ template <typename KC, typename VC> struct codec_pair
 
     KC key_codec;
     VC value_codec;
+
+    template <typename KCT, typename VCT>
+    codec_pair(KCT&& k, VCT&& v)
+        : key_codec(std::forward<KCT>(k))
+        , value_codec(std::forward<VCT>(v))
+    {
+        static_assert(is_key_codec<std::decay_t<KC>>::value,
+                      "KC must be a specialization of key_codec<IN_T, OUT_T>");
+
+        static_assert(is_value_codec<std::decay_t<VC>>::value,
+                      "VC must be a specialization of value_codec<IN_T, OUT_T>");
+    }
 };
+
+template <typename KCT, typename VCT>
+codec_pair(KCT&&, VCT&&) -> codec_pair<std::decay_t<KCT>, std::decay_t<VCT>>;
 
 template <typename T> struct is_codec_pair : std::false_type
 {
@@ -691,8 +695,8 @@ constexpr log_level default_log_level = log_level::off;
 template <typename CODEC_PAIR> class configuration
 {
   public:
-    configuration(CODEC_PAIR codecs)
-        : _codecs(codecs)
+    configuration(CODEC_PAIR&& codecs)
+        : _codecs(std::forward<CODEC_PAIR>(codecs))
     {
         static_assert(codecs::is_codec_pair<std::decay_t<CODEC_PAIR>>::value,
                       "CODEC_PAIR must be a specialization of codec_pair<KC, VC>");
@@ -703,10 +707,16 @@ template <typename CODEC_PAIR> class configuration
         return _codecs;
     }
 
-    configuration& filename(std::string filename)
+    configuration& filename(std::string filename) &
     {
-        _filename = filename;
+        _filename = std::move(filename);
         return *this;
+    }
+
+    configuration&& filename(std::string filename) &&
+    {
+        _filename = std::move(filename);
+        return std::move(*this);
     }
 
     std::string filename() const
@@ -714,10 +724,16 @@ template <typename CODEC_PAIR> class configuration
         return _filename;
     }
 
-    configuration& table(std::string table)
+    configuration& table(std::string table) &
     {
-        _table = table;
+        _table = std::move(table);
         return *this;
+    }
+
+    configuration&& table(std::string table) &&
+    {
+        _table = std::move(table);
+        return std::move(*this);
     }
 
     std::string table() const
@@ -725,10 +741,16 @@ template <typename CODEC_PAIR> class configuration
         return _table;
     }
 
-    configuration& mode(operation_mode mode)
+    configuration& mode(operation_mode mode) &
     {
         _mode = mode;
         return *this;
+    }
+
+    configuration&& mode(operation_mode mode) &&
+    {
+        _mode = mode;
+        return std::move(*this);
     }
 
     operation_mode mode() const
@@ -736,10 +758,16 @@ template <typename CODEC_PAIR> class configuration
         return _mode;
     }
 
-    configuration& auto_commit(bool auto_commit)
+    configuration& auto_commit(bool auto_commit) &
     {
         _auto_commit = auto_commit;
         return *this;
+    }
+
+    configuration&& auto_commit(bool auto_commit) &&
+    {
+        _auto_commit = auto_commit;
+        return std::move(*this);
     }
 
     bool auto_commit() const
@@ -747,10 +775,15 @@ template <typename CODEC_PAIR> class configuration
         return _auto_commit;
     }
 
-    configuration& log_level(log_level log_level)
+    configuration& log_level(bw::sqlitemap::log_level log_level) &
     {
         _log_level = log_level;
         return *this;
+    }
+    configuration&& log_level(bw::sqlitemap::log_level log_level) &&
+    {
+        _log_level = log_level;
+        return std::move(*this);
     }
 
     bw::sqlitemap::log_level log_level() const
@@ -758,10 +791,16 @@ template <typename CODEC_PAIR> class configuration
         return _log_level;
     }
 
-    configuration& log_impl(logger::log_function log_impl)
+    configuration& log_impl(logger::log_function log_impl) &
     {
-        _log_impl = log_impl;
+        _log_impl = std::move(log_impl);
         return *this;
+    }
+
+    configuration&& log_impl(logger::log_function log_impl) &&
+    {
+        _log_impl = std::move(log_impl);
+        return std::move(*this);
     }
 
     logger::log_function log_impl() const
@@ -769,29 +808,34 @@ template <typename CODEC_PAIR> class configuration
         return _log_impl;
     }
 
-    configuration& pragma(const std::string& flag, int value)
+    configuration& pragma(std::string flag, int value) &
     {
-        return pragma(flag, std::to_string(value));
+        return pragma(std::move(flag), std::to_string(value));
     }
 
-    configuration& pragma(const std::string& flag, const std::string& value)
+    configuration&& pragma(std::string flag, int value) &&
     {
-        return pragma("PRAGMA " + flag + " = " + value);
+        return std::move(pragma(std::move(flag), std::to_string(value)));
     }
 
-    configuration& pragma(const std::string& statement)
+    configuration& pragma(std::string flag, std::string value) &
     {
-        std::string prefix = "PRAGMA ";
-        if (statement.size() < prefix.size() ||
-            !std::equal(prefix.begin(), prefix.end(), statement.begin(),
-                        [](char a, char b) { return std::tolower(a) == std::tolower(b); }))
-        {
-            _pragma_statements.push_back(prefix + statement);
-            return *this;
-        }
+        return pragma("PRAGMA " + std::move(flag) + " = " + std::move(value));
+    }
 
-        _pragma_statements.push_back(statement);
-        return *this;
+    configuration&& pragma(std::string flag, std::string value) &&
+    {
+        return std::move(pragma("PRAGMA " + std::move(flag) + " = " + std::move(value)));
+    }
+
+    configuration& pragma(std::string statement) &
+    {
+        return add_pragma_statement(std::move(statement));
+    }
+
+    configuration&& pragma(std::string statement) &&
+    {
+        return std::move(add_pragma_statement(std::move(statement)));
     }
 
     const std::vector<std::string>& pragmas() const
@@ -800,6 +844,21 @@ template <typename CODEC_PAIR> class configuration
     }
 
   private:
+    configuration& add_pragma_statement(std::string statement)
+    {
+        static constexpr std::string_view prefix = "PRAGMA ";
+        bool has_prefix =
+            statement.size() >= prefix.size() &&
+            std::equal(prefix.begin(), prefix.end(), statement.begin(),
+                       [](char a, char b) { return std::tolower(a) == std::tolower(b); });
+
+        if (!has_prefix)
+            statement = std::string(prefix) + std::move(statement);
+
+        _pragma_statements.push_back(std::move(statement));
+        return *this;
+    }
+
     CODEC_PAIR _codecs;
     std::string _filename = default_filename;
     std::string _table = default_table;
@@ -831,7 +890,7 @@ template <typename CODEC_ARG> auto config(CODEC_ARG codec)
     }
 }
 
-template <typename KC, typename VC> auto config(KC key_codec, VC value_codec)
+template <typename KC, typename VC> auto config(KC&& key_codec, VC&& value_codec)
 {
     return config(codecs::codec_pair(std::forward<KC>(key_codec), std::forward<VC>(value_codec)));
 }
@@ -1431,8 +1490,19 @@ template <typename CODEC_PAIR = std::decay_t<decltype(config().codecs())>> class
     {
     }
 
-    sqlitemap(configuration<CODEC_PAIR> config)
-        : _config(std::forward<configuration<CODEC_PAIR>>(config))
+    sqlitemap(const configuration<CODEC_PAIR>& config)
+        : _config(config) // copies
+    {
+        init_from_config();
+    }
+
+    sqlitemap(configuration<CODEC_PAIR>&& config)
+        : _config(std::move(config)) // moves
+    {
+        init_from_config();
+    }
+
+    void init_from_config()
     {
         log().set_level(_config.log_level());
         if (_config.log_impl())

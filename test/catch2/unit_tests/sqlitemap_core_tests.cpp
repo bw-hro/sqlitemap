@@ -8,6 +8,8 @@
 
 #include <bw/tempdir/tempdir.hpp>
 
+#include "conversion_functor.hpp"
+
 using namespace bw::sqlitemap;
 using namespace bw::tempdir;
 namespace fs = std::filesystem;
@@ -145,6 +147,312 @@ TEST_CASE("sqlitemap can be stored in a std::map")
 
     REQUIRE(db_map["first"].get("k1") == "v1");
     REQUIRE((db2["k2"] == "v2"));
+}
+
+TEST_CASE("sqlitemap tries to avoid copies of configuration and codecs")
+{
+    using namespace bw::testhelper;
+
+    // clang-format off
+    struct key_codec_encode_functor : public conversion_functor<int, std::string>
+    {
+        key_codec_encode_functor(counts* counts_ptr = nullptr): conversion_functor<int, std::string>(
+            "KEY_ENCODE_FUNCTOR", [](int key){ return "key-" + std::to_string(key); }, counts_ptr)
+        {}
+    };
+    
+    struct key_codec_decode_functor : public conversion_functor<std::string, int>
+    {
+        key_codec_decode_functor(counts* counts_ptr = nullptr): conversion_functor<std::string, int>(
+            "KEY_DECODE_FUNCTOR", [](std::string key_str){ return std::atoi(key_str.substr(4).c_str()); }, counts_ptr)
+        {}
+    };
+
+    struct value_codec_encode_functor : public conversion_functor<double, std::string>
+    {
+        value_codec_encode_functor(counts* counts_ptr = nullptr): conversion_functor<double, std::string>(
+            "VALUE_ENCODE_FUNCTOR", [](double value){ return "value-" +  std::to_string(value); }, counts_ptr)
+        {}
+    };
+
+    struct value_codec_decode_functor : public conversion_functor<std::string, double>
+    {
+        value_codec_decode_functor(counts* counts_ptr = nullptr): conversion_functor<std::string, double>(
+            "VALUE_DECODE_FUNCTOR", [](std::string value_str){ return std::atof(value_str.substr(6).c_str()); }, counts_ptr)
+        {}
+    };
+    
+    struct test_config: public instance_counter<test_config>,
+        public configuration<codecs::codec_pair<
+        key_codec_t<int, std::string>, value_codec_t<double, std::string>>>
+    {
+        using counter = instance_counter<test_config>;
+
+        test_config(counts* counts_ptr = nullptr)
+            : kc_encode_counts()
+            , kc_decode_counts()
+            , vc_encode_counts()
+            , vc_decode_counts()
+            , counter("######### TEST_CONFIG", counts_ptr)
+            , configuration(config(
+                key_codec(
+                    key_codec_encode_functor{&kc_encode_counts},
+                    key_codec_decode_functor{&kc_decode_counts}),
+                value_codec(
+                    value_codec_encode_functor{&vc_encode_counts},
+                    value_codec_decode_functor{&vc_decode_counts})))
+        {
+        }
+
+        counts kc_encode_counts;
+        counts kc_decode_counts;
+        counts vc_encode_counts;
+        counts vc_decode_counts;
+    };
+
+    // clang-format on
+
+    { // check that copies are avoided when passing configuration as rvalue reference
+        counts test_config_counts;
+        {
+            sqlitemap sm(test_config{&test_config_counts});
+            sm.set(42, 3.1415);
+            REQUIRE(sm.get(42) == Catch::Approx(3.1415));
+        }
+
+        REQUIRE(test_config_counts.default_ctor_count == 1);
+        REQUIRE(test_config_counts.copy_ctor_count == 0);
+        REQUIRE(test_config_counts.copy_assign_count == 0);
+        REQUIRE(test_config_counts.dtor_count == 1);
+    }
+
+    { // check that copies are avoided when passing configuration and codecs as rvalue references
+        counts kc_encode_counts;
+        counts kc_decode_counts;
+        counts vc_encode_counts;
+        counts vc_decode_counts;
+
+        {
+            sqlitemap sm(config(key_codec(key_codec_encode_functor{&kc_encode_counts},
+                                          key_codec_decode_functor{&kc_decode_counts}),
+                                value_codec(value_codec_encode_functor{&vc_encode_counts},
+                                            value_codec_decode_functor{&vc_decode_counts})));
+            sm.set(42, 3.1415);
+            sm.set(24, 2.4);
+            sm.set(1, 42);
+            sm.commit();
+
+            REQUIRE(sm.get(42) == Catch::Approx(3.1415));
+            REQUIRE(sm.get(24) == Catch::Approx(2.4));
+            REQUIRE(sm.get(1) == Catch::Approx(42));
+
+            for (const auto& [key, value] : sm)
+            {
+                std::cout << "key:" << key << " value:" << value << "\n";
+            }
+
+            auto res = std::find_if(sm.begin(), sm.end(), [](auto kv) { return kv.second > 10; });
+            REQUIRE(res != sm.end());
+            REQUIRE(res->first == 1);
+        }
+
+        REQUIRE(kc_encode_counts.default_ctor_count == 1);
+        REQUIRE(kc_decode_counts.default_ctor_count == 1);
+        REQUIRE(vc_encode_counts.default_ctor_count == 1);
+        REQUIRE(vc_decode_counts.default_ctor_count == 1);
+
+        REQUIRE(kc_encode_counts.copy_ctor_count == 0);
+        REQUIRE(kc_decode_counts.copy_ctor_count == 0);
+        REQUIRE(vc_encode_counts.copy_ctor_count == 0);
+        REQUIRE(vc_decode_counts.copy_ctor_count == 0);
+
+        REQUIRE(kc_encode_counts.copy_assign_count == 0);
+        REQUIRE(kc_decode_counts.copy_assign_count == 0);
+        REQUIRE(vc_encode_counts.copy_assign_count == 0);
+        REQUIRE(vc_decode_counts.copy_assign_count == 0);
+
+        REQUIRE(kc_encode_counts.dtor_count == 1);
+        REQUIRE(kc_decode_counts.dtor_count == 1);
+        REQUIRE(vc_encode_counts.dtor_count == 1);
+        REQUIRE(vc_decode_counts.dtor_count == 1);
+    }
+
+    { // check that copies are avoided when passing configuration
+      // as rvalue and codecs as lvalue references
+        counts kc_encode_counts;
+        counts kc_decode_counts;
+        counts vc_encode_counts;
+        counts vc_decode_counts;
+
+        {
+            auto kc = key_codec(key_codec_encode_functor{&kc_encode_counts},
+                                key_codec_decode_functor{&kc_decode_counts});
+
+            auto vc = value_codec(value_codec_encode_functor{&vc_encode_counts},
+                                  value_codec_decode_functor{&vc_decode_counts});
+
+            sqlitemap sm(config(kc, vc)); // only copy of codecs, configuration is passed as rvalue
+            sm.set(42, 3.1415);
+            sm.set(24, 2.4);
+            sm.set(1, 42);
+            sm.commit();
+
+            REQUIRE(sm.get(42) == Catch::Approx(3.1415));
+            REQUIRE(sm.get(24) == Catch::Approx(2.4));
+            REQUIRE(sm.get(1) == Catch::Approx(42));
+
+            for (const auto& [key, value] : sm)
+            {
+                std::cout << "key:" << key << " value:" << value << "\n";
+            }
+
+            auto res = std::find_if(sm.begin(), sm.end(), [](auto kv) { return kv.second > 10; });
+            REQUIRE(res != sm.end());
+            REQUIRE(res->first == 1);
+        }
+
+        REQUIRE(kc_encode_counts.default_ctor_count == 1);
+        REQUIRE(kc_decode_counts.default_ctor_count == 1);
+        REQUIRE(vc_encode_counts.default_ctor_count == 1);
+        REQUIRE(vc_decode_counts.default_ctor_count == 1);
+
+        REQUIRE(kc_encode_counts.copy_ctor_count == 1);
+        REQUIRE(kc_decode_counts.copy_ctor_count == 1);
+        REQUIRE(vc_encode_counts.copy_ctor_count == 1);
+        REQUIRE(vc_decode_counts.copy_ctor_count == 1);
+
+        REQUIRE(kc_encode_counts.copy_assign_count == 0);
+        REQUIRE(kc_decode_counts.copy_assign_count == 0);
+        REQUIRE(vc_encode_counts.copy_assign_count == 0);
+        REQUIRE(vc_decode_counts.copy_assign_count == 0);
+
+        // 2 d'tor calls: 1 for original, 1 copy
+        REQUIRE(kc_encode_counts.dtor_count == 2);
+        REQUIRE(kc_decode_counts.dtor_count == 2);
+        REQUIRE(vc_encode_counts.dtor_count == 2);
+        REQUIRE(vc_decode_counts.dtor_count == 2);
+    }
+
+    { // check that copies are avoided when passing configuration and codecs as lvalue references
+        counts kc_encode_counts;
+        counts kc_decode_counts;
+        counts vc_encode_counts;
+        counts vc_decode_counts;
+
+        {
+            auto kc = key_codec(key_codec_encode_functor{&kc_encode_counts},
+                                key_codec_decode_functor{&kc_decode_counts});
+
+            auto vc = value_codec(value_codec_encode_functor{&vc_encode_counts},
+                                  value_codec_decode_functor{&vc_decode_counts});
+
+            auto cfg = config(kc, vc); // first copy of codecs
+
+            sqlitemap sm(cfg); // second copy of codecs, as the whole configuration is copied
+            sm.set(42, 3.1415);
+            sm.set(24, 2.4);
+            sm.set(1, 42);
+            sm.commit();
+
+            REQUIRE(sm.get(42) == Catch::Approx(3.1415));
+            REQUIRE(sm.get(24) == Catch::Approx(2.4));
+            REQUIRE(sm.get(1) == Catch::Approx(42));
+
+            for (const auto& [key, value] : sm)
+            {
+                std::cout << "key:" << key << " value:" << value << "\n";
+            }
+
+            auto res = std::find_if(sm.begin(), sm.end(), [](auto kv) { return kv.second > 10; });
+            REQUIRE(res != sm.end());
+            REQUIRE(res->first == 1);
+        }
+
+        REQUIRE(kc_encode_counts.default_ctor_count == 1);
+        REQUIRE(kc_decode_counts.default_ctor_count == 1);
+        REQUIRE(vc_encode_counts.default_ctor_count == 1);
+        REQUIRE(vc_decode_counts.default_ctor_count == 1);
+
+        REQUIRE(kc_encode_counts.copy_ctor_count == 2);
+        REQUIRE(kc_decode_counts.copy_ctor_count == 2);
+        REQUIRE(vc_encode_counts.copy_ctor_count == 2);
+        REQUIRE(vc_decode_counts.copy_ctor_count == 2);
+
+        REQUIRE(kc_encode_counts.copy_assign_count == 0);
+        REQUIRE(kc_decode_counts.copy_assign_count == 0);
+        REQUIRE(vc_encode_counts.copy_assign_count == 0);
+        REQUIRE(vc_decode_counts.copy_assign_count == 0);
+
+        // 3 d'tor calls: 1 for original, 2 copies
+        REQUIRE(kc_encode_counts.dtor_count == 3);
+        REQUIRE(kc_decode_counts.dtor_count == 3);
+        REQUIRE(vc_encode_counts.dtor_count == 3);
+        REQUIRE(vc_decode_counts.dtor_count == 3);
+    }
+
+    {
+        counts kc_encode_counts;
+        counts kc_decode_counts;
+        counts vc_encode_counts;
+        counts vc_decode_counts;
+
+        struct db_wrapper
+        {
+            using kc_t = key_codec_t<int, std::string>;
+            using vc_t = value_codec_t<double, std::string>;
+            using DB = sqlitemap_t<kc_t, vc_t>;
+
+            db_wrapper(std::string table_name,                             //
+                       counts* kc_encode_counts, counts* kc_decode_counts, //
+                       counts* vc_encode_counts, counts* vc_decode_counts)
+                : _db(config(key_codec(key_codec_encode_functor{kc_encode_counts},
+                                       key_codec_decode_functor{kc_decode_counts}),
+                             value_codec(value_codec_encode_functor{vc_encode_counts},
+                                         value_codec_decode_functor{vc_decode_counts}))
+                          .table(table_name))
+            {
+                _db.set(42, 3.1415);
+                _db.set(24, 2.4);
+                _db.set(1, 42);
+                _db.commit();
+            }
+
+            int stored_records() const
+            {
+                return static_cast<int>(_db.size());
+            }
+
+          private:
+            DB _db;
+        };
+
+        {
+            db_wrapper db("test_table",                         //
+                          &kc_encode_counts, &kc_decode_counts, //
+                          &vc_encode_counts, &vc_decode_counts);
+            REQUIRE(db.stored_records() == 3);
+        }
+
+        REQUIRE(kc_encode_counts.default_ctor_count == 1);
+        REQUIRE(kc_decode_counts.default_ctor_count == 1);
+        REQUIRE(vc_encode_counts.default_ctor_count == 1);
+        REQUIRE(vc_decode_counts.default_ctor_count == 1);
+
+        REQUIRE(kc_encode_counts.copy_ctor_count == 0);
+        REQUIRE(kc_decode_counts.copy_ctor_count == 0);
+        REQUIRE(vc_encode_counts.copy_ctor_count == 0);
+        REQUIRE(vc_decode_counts.copy_ctor_count == 0);
+
+        REQUIRE(kc_encode_counts.copy_assign_count == 0);
+        REQUIRE(kc_decode_counts.copy_assign_count == 0);
+        REQUIRE(vc_encode_counts.copy_assign_count == 0);
+        REQUIRE(vc_decode_counts.copy_assign_count == 0);
+
+        REQUIRE(kc_encode_counts.dtor_count == 1);
+        REQUIRE(kc_decode_counts.dtor_count == 1);
+        REQUIRE(vc_encode_counts.dtor_count == 1);
+        REQUIRE(vc_decode_counts.dtor_count == 1);
+    }
 }
 
 TEST_CASE("sqlitemap can be represented as string")
