@@ -77,6 +77,7 @@ class processor
     void exit()
     {
         std::cout << "Existing..." << std::endl;
+        db.commit();
         db.close();
     }
 
