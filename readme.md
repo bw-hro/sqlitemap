@@ -451,43 +451,43 @@ sqlitemap_t<key_codec_t<int>, value_codec_t<my_class, std::string> db;
 Example showing how `sqlitemap_t`, `key_codec_t` and `value_codec_t` support convenient application-specific type aliases and improve readability:
 
 ```c++
-    using namespace bw::sqlitemap;
+using namespace bw::sqlitemap;
 
-    template<typename T> blob to_blob(const T& data){...}
-    template<typename T> T from_blob(blob blob){...}
+template<typename T> blob to_blob(const T& data){...}
+template<typename T> T from_blob(blob blob){...}
 
-    struct tile_location ...
-    struct tile_bitmap ...
+struct tile_location ...
+struct tile_bitmap ...
 
-    class tiles
+class tiles
+{
+    public:
+    using location_codec = key_codec_t<tile_location, blob>;
+    using bitmap_codec = value_codec_t<tile_bitmap, blob>;
+    using tiles_db = sqlitemap_t<location_codec, bitmap_codec>;
+
+    tiles()
+        : data(std::make_unique<tiles_db>(
+                config(location_codec{to_blob<tile_location>, from_blob<tile_location>},
+                       bitmap_codec{to_blob<tile_bitmap>, from_blob<tile_bitmap>})
+                    .filename("tiles.sqlite")
+                    .table("tiles")))
     {
-      public:
-        using location_codec = key_codec_t<tile_location, blob>;
-        using bitmap_codec = value_codec_t<tile_bitmap, blob>;
-        using tiles_db = sqlitemap_t<location_codec, bitmap_codec>;
+    }
 
-        tiles()
-            : data(std::make_unique<tiles_db>(
-                  config(location_codec{to_blob<tile_location>, from_blob<tile_location>},
-                         bitmap_codec{to_blob<tile_bitmap>, from_blob<tile_bitmap>})
-                      .filename("tiles.sqlite")
-                      .table("tiles")))
-        {
-        }
+    void save(const tile_location& location, const tile_bitmap& bitmap)
+    {
+        data->set(location, bitmap);
+    }
 
-        void save(const tile_location& location, const tile_bitmap& bitmap)
-        {
-            data->set(location, bitmap);
-        }
+    tile_bitmap tile_for(const tile_location& location) const
+    {
+        return data->get(location);
+    }
 
-        tile_bitmap tile_for(const tile_location& location) const
-        {
-            return data->get(location);
-        }
-
-      private:
-        std::unique_ptr<tiles_db> data;
-    };
+    private:
+    std::unique_ptr<tiles_db> data;
+};
 
 ```
 
