@@ -1495,19 +1495,8 @@ template <typename CODEC_PAIR = std::decay_t<decltype(config().codecs())>> class
     {
     }
 
-    sqlitemap(const configuration<CODEC_PAIR>& config)
-        : _config(config) // copies
-    {
-        init_from_config();
-    }
-
-    sqlitemap(configuration<CODEC_PAIR>&& config)
-        : _config(std::move(config)) // moves
-    {
-        init_from_config();
-    }
-
-    void init_from_config()
+    sqlitemap(configuration<CODEC_PAIR> config)
+        : _config(std::move(config))
     {
         log().set_level(_config.log_level());
         if (_config.log_impl())
