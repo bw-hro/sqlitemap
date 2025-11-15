@@ -52,14 +52,14 @@ class tiles
 {
     using key_type = tile_location;
     using value_type = tile_bitmap;
-    using key_codec_t = sm::codecs::key_codec<key_type, sm::blob>;
-    using value_codec_t = sm::codecs::value_codec<value_type, sm::blob>;
-    using db = sm::sqlitemap<sm::codecs::codec_pair<key_codec_t, value_codec_t>>;
+    using key_codec = sm::key_codec_t<key_type, sm::blob>;
+    using value_codec = sm::value_codec_t<value_type, sm::blob>;
+    using db = sm::sqlitemap_t<key_codec, value_codec>;
 
   public:
     tiles()
-        : data(sm::config(key_codec_t{to_blob<key_type>, from_blob<key_type>},
-                          value_codec_t{to_blob<value_type>, from_blob<value_type>})
+        : data(sm::config(key_codec{to_blob<key_type>, from_blob<key_type>},
+                          value_codec{to_blob<value_type>, from_blob<value_type>})
                    .log_level(sm::log_level::debug))
     {
         data.set(tile_location{0, 0, 0}, tile_bitmap{1, 1, 0, 0, //
