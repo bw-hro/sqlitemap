@@ -8,6 +8,8 @@
 
 #include <bw/tempdir/tempdir.hpp>
 
+#include "conversion_functor.hpp"
+
 using namespace bw::sqlitemap;
 using namespace bw::tempdir;
 namespace fs = std::filesystem;
@@ -25,8 +27,7 @@ TEST_CASE("sqlitemap assignment")
     auto sm_ptr = std::make_unique<sqlitemap<>>();
 
     // as unique_ptr with custom codecs
-    using codec_pair = decltype(config<int, double>().codecs());
-    auto smc_ptr = std::make_unique<sqlitemap<codec_pair>>(config<int, double>());
+    auto smc_ptr = std::make_unique<sqlitemap_t<int, double>>(config<int, double>());
 
     // as member of a class
     class App
@@ -50,6 +51,451 @@ TEST_CASE("sqlitemap assignment")
 
     REQUIRE_NOTHROW(App(file.string()));
     REQUIRE((sqlitemap(file.string(), "cache", operation_mode::r).get("app-1") == "123"));
+}
+
+TEST_CASE("sqlitemap move constructor and assignment")
+{
+    TempDir temp_dir(Config().enable_logging());
+    auto file = (temp_dir.path() / "db.sqlite").string();
+
+    sqlitemap sm1(config().filename(file).log_level(log_level::trace));
+    sm1.set("k1", "v1");
+    sm1.commit();
+
+    {
+        // move constructor
+        sqlitemap sm2(std::move(sm1));
+        REQUIRE(sm2.size() == 1);
+        REQUIRE((sm2["k1"] == "v1"));
+        sm2.set("k2", "v2");
+        sm2.commit();
+
+        // move assignment
+        sqlitemap sm3;
+        sm3 = std::move(sm2);
+        REQUIRE(sm3.size() == 2);
+        REQUIRE((sm3["k1"] == "v1"));
+        REQUIRE((sm3["k2"] == "v2"));
+        sm3.set("k3", "v3");
+        sm3.commit();
+    }
+
+    sqlitemap sm4(config().filename(file).log_level(log_level::trace));
+    REQUIRE(sm4.size() == 3);
+    REQUIRE((sm4["k1"] == "v1"));
+    REQUIRE((sm4["k2"] == "v2"));
+    REQUIRE((sm4["k3"] == "v3"));
+    sm4.set("k4", "v4");
+    sm4.commit();
+
+    // move assignment, reuse sm1, which was moved from before
+    sm1 = std::move(sm4);
+    REQUIRE(sm1.size() == 4);
+    REQUIRE((sm1["k1"] == "v1"));
+    REQUIRE((sm1["k2"] == "v2"));
+    REQUIRE((sm1["k3"] == "v3"));
+    REQUIRE((sm1["k4"] == "v4"));
+}
+
+TEST_CASE("sqlitemap can be stored in a std::vector")
+{
+    TempDir temp_dir(Config().enable_logging());
+    auto file1 = (temp_dir.path() / "db1.sqlite").string();
+    auto file2 = (temp_dir.path() / "db2.sqlite").string();
+
+    std::vector<sqlitemap<>> db_vector;
+    db_vector.emplace_back(config().filename(file1).log_level(log_level::debug));
+    db_vector.push_back(sqlitemap(config().filename(file2).log_level(log_level::debug)));
+
+    db_vector[0].set("k1", "v1");
+    db_vector[0].commit();
+
+    auto& db2 = db_vector[1];
+    db2.set("k2", "v2");
+    db2.commit();
+
+    for (auto& db : db_vector)
+    {
+        db.set("loop_key", "loop_value");
+        db.commit();
+    }
+
+    REQUIRE(db_vector[0].get("k1") == "v1");
+    REQUIRE(db_vector[0].get("loop_key") == "loop_value");
+
+    REQUIRE((db2["k2"] == "v2"));
+    REQUIRE((db2["loop_key"] == "loop_value"));
+}
+
+TEST_CASE("sqlitemap can be stored in a std::map")
+{
+    TempDir temp_dir(Config().enable_logging());
+    auto file1 = (temp_dir.path() / "db1.sqlite").string();
+    auto file2 = (temp_dir.path() / "db2.sqlite").string();
+
+    std::map<std::string, sqlitemap<>> db_map;
+
+    db_map["first"] = sqlitemap<>(config().filename(file1).log_level(log_level::debug));
+    db_map["second"] = sqlitemap<>(config().filename(file2).log_level(log_level::debug));
+
+    db_map["first"].set("k1", "v1");
+    db_map["first"].commit();
+
+    auto& db2 = db_map["second"];
+    db2.set("k2", "v2");
+    db2.commit();
+
+    REQUIRE(db_map["first"].get("k1") == "v1");
+    REQUIRE((db2["k2"] == "v2"));
+}
+
+TEST_CASE("sqlitemap tries to avoid copies of configuration and codecs")
+{
+    using namespace bw::testhelper;
+
+    // clang-format off
+    struct key_codec_encode_functor : public conversion_functor<int, std::string>
+    {
+        key_codec_encode_functor(counts* counts_ptr = nullptr): conversion_functor<int, std::string>(
+            "KEY_ENCODE_FUNCTOR", [](int key){ return "key-" + std::to_string(key); }, counts_ptr)
+        {}
+    };
+    
+    struct key_codec_decode_functor : public conversion_functor<std::string, int>
+    {
+        key_codec_decode_functor(counts* counts_ptr = nullptr): conversion_functor<std::string, int>(
+            "KEY_DECODE_FUNCTOR", [](std::string key_str){ return std::atoi(key_str.substr(4).c_str()); }, counts_ptr)
+        {}
+    };
+
+    struct value_codec_encode_functor : public conversion_functor<double, std::string>
+    {
+        value_codec_encode_functor(counts* counts_ptr = nullptr): conversion_functor<double, std::string>(
+            "VALUE_ENCODE_FUNCTOR", [](double value){ return "value-" +  std::to_string(value); }, counts_ptr)
+        {}
+    };
+
+    struct value_codec_decode_functor : public conversion_functor<std::string, double>
+    {
+        value_codec_decode_functor(counts* counts_ptr = nullptr): conversion_functor<std::string, double>(
+            "VALUE_DECODE_FUNCTOR", [](std::string value_str){ return std::atof(value_str.substr(6).c_str()); }, counts_ptr)
+        {}
+    };
+    
+    struct test_config: public instance_counter<test_config>,
+        public configuration<codecs::codec_pair<
+        key_codec_t<int, std::string>, value_codec_t<double, std::string>>>
+    {
+        using counter = instance_counter<test_config>;
+
+        test_config(counts* counts_ptr = nullptr)
+            : kc_encode_counts()
+            , kc_decode_counts()
+            , vc_encode_counts()
+            , vc_decode_counts()
+            , counter("######### TEST_CONFIG", counts_ptr)
+            , configuration(config(
+                key_codec(
+                    key_codec_encode_functor{&kc_encode_counts},
+                    key_codec_decode_functor{&kc_decode_counts}),
+                value_codec(
+                    value_codec_encode_functor{&vc_encode_counts},
+                    value_codec_decode_functor{&vc_decode_counts})))
+        {
+        }
+
+        counts kc_encode_counts;
+        counts kc_decode_counts;
+        counts vc_encode_counts;
+        counts vc_decode_counts;
+    };
+
+    // clang-format on
+
+    { // check that copies are avoided when passing configuration as rvalue reference
+        counts test_config_counts;
+        {
+            sqlitemap sm(test_config{&test_config_counts});
+            sm.set(42, 3.1415);
+            REQUIRE(sm.get(42) == Catch::Approx(3.1415));
+        }
+
+        REQUIRE(test_config_counts.default_ctor_count == 1);
+        REQUIRE(test_config_counts.copy_ctor_count == 0);
+        REQUIRE(test_config_counts.copy_assign_count == 0);
+        REQUIRE(test_config_counts.dtor_count == 1);
+    }
+
+    { // check that copies are avoided when passing configuration and codecs as rvalue references
+        counts kc_encode_counts;
+        counts kc_decode_counts;
+        counts vc_encode_counts;
+        counts vc_decode_counts;
+
+        {
+            sqlitemap sm(config(key_codec(key_codec_encode_functor{&kc_encode_counts},
+                                          key_codec_decode_functor{&kc_decode_counts}),
+                                value_codec(value_codec_encode_functor{&vc_encode_counts},
+                                            value_codec_decode_functor{&vc_decode_counts})));
+            sm.set(42, 3.1415);
+            sm.set(24, 2.4);
+            sm.set(1, 42);
+            sm.commit();
+
+            REQUIRE(sm.get(42) == Catch::Approx(3.1415));
+            REQUIRE(sm.get(24) == Catch::Approx(2.4));
+            REQUIRE(sm.get(1) == Catch::Approx(42));
+
+            for (const auto& [key, value] : sm)
+            {
+                std::cout << "key:" << key << " value:" << value << "\n";
+            }
+
+            auto res = std::find_if(sm.begin(), sm.end(), [](auto kv) { return kv.second > 10; });
+            REQUIRE(res != sm.end());
+            REQUIRE(res->first == 1);
+        }
+
+        REQUIRE(kc_encode_counts.default_ctor_count == 1);
+        REQUIRE(kc_decode_counts.default_ctor_count == 1);
+        REQUIRE(vc_encode_counts.default_ctor_count == 1);
+        REQUIRE(vc_decode_counts.default_ctor_count == 1);
+
+        REQUIRE(kc_encode_counts.copy_ctor_count == 0);
+        REQUIRE(kc_decode_counts.copy_ctor_count == 0);
+        REQUIRE(vc_encode_counts.copy_ctor_count == 0);
+        REQUIRE(vc_decode_counts.copy_ctor_count == 0);
+
+        REQUIRE(kc_encode_counts.copy_assign_count == 0);
+        REQUIRE(kc_decode_counts.copy_assign_count == 0);
+        REQUIRE(vc_encode_counts.copy_assign_count == 0);
+        REQUIRE(vc_decode_counts.copy_assign_count == 0);
+
+        REQUIRE(kc_encode_counts.dtor_count == 1);
+        REQUIRE(kc_decode_counts.dtor_count == 1);
+        REQUIRE(vc_encode_counts.dtor_count == 1);
+        REQUIRE(vc_decode_counts.dtor_count == 1);
+    }
+
+    { // check that copies are avoided when passing configuration
+      // as rvalue and codecs as lvalue references
+        counts kc_encode_counts;
+        counts kc_decode_counts;
+        counts vc_encode_counts;
+        counts vc_decode_counts;
+
+        {
+            auto kc = key_codec(key_codec_encode_functor{&kc_encode_counts},
+                                key_codec_decode_functor{&kc_decode_counts});
+
+            auto vc = value_codec(value_codec_encode_functor{&vc_encode_counts},
+                                  value_codec_decode_functor{&vc_decode_counts});
+
+            sqlitemap sm(config(kc, vc)); // only copy of codecs, configuration is passed as rvalue
+            sm.set(42, 3.1415);
+            sm.set(24, 2.4);
+            sm.set(1, 42);
+            sm.commit();
+
+            REQUIRE(sm.get(42) == Catch::Approx(3.1415));
+            REQUIRE(sm.get(24) == Catch::Approx(2.4));
+            REQUIRE(sm.get(1) == Catch::Approx(42));
+
+            for (const auto& [key, value] : sm)
+            {
+                std::cout << "key:" << key << " value:" << value << "\n";
+            }
+
+            auto res = std::find_if(sm.begin(), sm.end(), [](auto kv) { return kv.second > 10; });
+            REQUIRE(res != sm.end());
+            REQUIRE(res->first == 1);
+        }
+
+        REQUIRE(kc_encode_counts.default_ctor_count == 1);
+        REQUIRE(kc_decode_counts.default_ctor_count == 1);
+        REQUIRE(vc_encode_counts.default_ctor_count == 1);
+        REQUIRE(vc_decode_counts.default_ctor_count == 1);
+
+        REQUIRE(kc_encode_counts.copy_ctor_count == 1);
+        REQUIRE(kc_decode_counts.copy_ctor_count == 1);
+        REQUIRE(vc_encode_counts.copy_ctor_count == 1);
+        REQUIRE(vc_decode_counts.copy_ctor_count == 1);
+
+        REQUIRE(kc_encode_counts.copy_assign_count == 0);
+        REQUIRE(kc_decode_counts.copy_assign_count == 0);
+        REQUIRE(vc_encode_counts.copy_assign_count == 0);
+        REQUIRE(vc_decode_counts.copy_assign_count == 0);
+
+        // 2 d'tor calls: 1 for original, 1 copy
+        REQUIRE(kc_encode_counts.dtor_count == 2);
+        REQUIRE(kc_decode_counts.dtor_count == 2);
+        REQUIRE(vc_encode_counts.dtor_count == 2);
+        REQUIRE(vc_decode_counts.dtor_count == 2);
+    }
+
+    { // check that copies are avoided when passing configuration and codecs as lvalue references
+        counts kc_encode_counts;
+        counts kc_decode_counts;
+        counts vc_encode_counts;
+        counts vc_decode_counts;
+
+        {
+            auto kc = key_codec(key_codec_encode_functor{&kc_encode_counts},
+                                key_codec_decode_functor{&kc_decode_counts});
+
+            auto vc = value_codec(value_codec_encode_functor{&vc_encode_counts},
+                                  value_codec_decode_functor{&vc_decode_counts});
+
+            auto cfg = config(kc, vc); // first copy of codecs
+
+            sqlitemap sm(cfg); // second copy of codecs, as the whole configuration is copied
+            sm.set(42, 3.1415);
+            sm.set(24, 2.4);
+            sm.set(1, 42);
+            sm.commit();
+
+            REQUIRE(sm.get(42) == Catch::Approx(3.1415));
+            REQUIRE(sm.get(24) == Catch::Approx(2.4));
+            REQUIRE(sm.get(1) == Catch::Approx(42));
+
+            for (const auto& [key, value] : sm)
+            {
+                std::cout << "key:" << key << " value:" << value << "\n";
+            }
+
+            auto res = std::find_if(sm.begin(), sm.end(), [](auto kv) { return kv.second > 10; });
+            REQUIRE(res != sm.end());
+            REQUIRE(res->first == 1);
+        }
+
+        REQUIRE(kc_encode_counts.default_ctor_count == 1);
+        REQUIRE(kc_decode_counts.default_ctor_count == 1);
+        REQUIRE(vc_encode_counts.default_ctor_count == 1);
+        REQUIRE(vc_decode_counts.default_ctor_count == 1);
+
+        REQUIRE(kc_encode_counts.copy_ctor_count == 2);
+        REQUIRE(kc_decode_counts.copy_ctor_count == 2);
+        REQUIRE(vc_encode_counts.copy_ctor_count == 2);
+        REQUIRE(vc_decode_counts.copy_ctor_count == 2);
+
+        REQUIRE(kc_encode_counts.copy_assign_count == 0);
+        REQUIRE(kc_decode_counts.copy_assign_count == 0);
+        REQUIRE(vc_encode_counts.copy_assign_count == 0);
+        REQUIRE(vc_decode_counts.copy_assign_count == 0);
+
+        // 3 d'tor calls: 1 for original, 2 copies
+        REQUIRE(kc_encode_counts.dtor_count == 3);
+        REQUIRE(kc_decode_counts.dtor_count == 3);
+        REQUIRE(vc_encode_counts.dtor_count == 3);
+        REQUIRE(vc_decode_counts.dtor_count == 3);
+    }
+
+    {
+        counts kc_encode_counts;
+        counts kc_decode_counts;
+        counts vc_encode_counts;
+        counts vc_decode_counts;
+
+        struct db_wrapper
+        {
+            using kc_t = key_codec_t<int, std::string>;
+            using vc_t = value_codec_t<double, std::string>;
+            using DB = sqlitemap_t<kc_t, vc_t>;
+
+            db_wrapper(std::string table_name,                             //
+                       counts* kc_encode_counts, counts* kc_decode_counts, //
+                       counts* vc_encode_counts, counts* vc_decode_counts)
+                : _db(config(key_codec(key_codec_encode_functor{kc_encode_counts},
+                                       key_codec_decode_functor{kc_decode_counts}),
+                             value_codec(value_codec_encode_functor{vc_encode_counts},
+                                         value_codec_decode_functor{vc_decode_counts}))
+                          .table(table_name))
+            {
+                _db.set(42, 3.1415);
+                _db.set(24, 2.4);
+                _db.set(1, 42);
+                _db.commit();
+            }
+
+            int stored_records() const
+            {
+                return static_cast<int>(_db.size());
+            }
+
+          private:
+            DB _db;
+        };
+
+        {
+            db_wrapper db("test_table",                         //
+                          &kc_encode_counts, &kc_decode_counts, //
+                          &vc_encode_counts, &vc_decode_counts);
+            REQUIRE(db.stored_records() == 3);
+        }
+
+        REQUIRE(kc_encode_counts.default_ctor_count == 1);
+        REQUIRE(kc_decode_counts.default_ctor_count == 1);
+        REQUIRE(vc_encode_counts.default_ctor_count == 1);
+        REQUIRE(vc_decode_counts.default_ctor_count == 1);
+
+        REQUIRE(kc_encode_counts.copy_ctor_count == 0);
+        REQUIRE(kc_decode_counts.copy_ctor_count == 0);
+        REQUIRE(vc_encode_counts.copy_ctor_count == 0);
+        REQUIRE(vc_decode_counts.copy_ctor_count == 0);
+
+        REQUIRE(kc_encode_counts.copy_assign_count == 0);
+        REQUIRE(kc_decode_counts.copy_assign_count == 0);
+        REQUIRE(vc_encode_counts.copy_assign_count == 0);
+        REQUIRE(vc_decode_counts.copy_assign_count == 0);
+
+        REQUIRE(kc_encode_counts.dtor_count == 1);
+        REQUIRE(kc_decode_counts.dtor_count == 1);
+        REQUIRE(vc_encode_counts.dtor_count == 1);
+        REQUIRE(vc_decode_counts.dtor_count == 1);
+    }
+}
+
+TEST_CASE("sqlitemap configuration offers a fluent interface")
+{
+    // configure all options using rvalue method calls
+    auto cfg = config()
+                   .filename("test_db.sqlite")
+                   .table("test_table")
+                   .mode(operation_mode::w)
+                   .auto_commit(true)
+                   .log_level(log_level::debug)
+                   .log_impl([](auto level, auto msg) {})
+                   .pragma("journal_mode", "WAL")
+                   .pragma("cache_size", -64000)
+                   .pragma("temp_store = 2");
+
+    REQUIRE(cfg.filename() == "test_db.sqlite");
+    REQUIRE(cfg.table() == "test_table");
+    REQUIRE(cfg.mode() == operation_mode::w);
+    REQUIRE(cfg.auto_commit());
+    REQUIRE(cfg.log_level() == log_level::debug);
+    REQUIRE(cfg.pragmas() == std::vector<std::string>{"PRAGMA journal_mode = WAL",
+                                                      "PRAGMA cache_size = -64000",
+                                                      "PRAGMA temp_store = 2"});
+
+    // configure all options using lvalue method calls
+    auto cfg2 = config();
+    cfg2.filename("test_db2.sqlite");
+    cfg2.table("test_table2");
+    cfg2.mode(operation_mode::r);
+    cfg2.auto_commit(false);
+    cfg2.log_level(log_level::error);
+    cfg2.log_impl([](auto level, auto msg) {});
+    cfg2.pragma("cache_size", 2000);
+    cfg2.pragma("synchronous", "OFF");
+
+    REQUIRE(cfg2.filename() == "test_db2.sqlite");
+    REQUIRE(cfg2.table() == "test_table2");
+    REQUIRE(cfg2.mode() == operation_mode::r);
+    REQUIRE_FALSE(cfg2.auto_commit());
+    REQUIRE(cfg2.log_level() == log_level::error);
+    REQUIRE(cfg2.pragmas() ==
+            std::vector<std::string>{"PRAGMA cache_size = 2000", "PRAGMA synchronous = OFF"});
 }
 
 TEST_CASE("sqlitemap can be represented as string")

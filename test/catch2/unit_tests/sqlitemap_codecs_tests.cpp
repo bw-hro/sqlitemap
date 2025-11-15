@@ -6,6 +6,7 @@
 
 #include <bw/tempdir/tempdir.hpp>
 
+#include "conversion_functor.hpp"
 #include "custom.hpp"
 #include <bw/sqlitemap/sqlitemap.hpp>
 
@@ -233,6 +234,56 @@ TEST_CASE("codecs can be defined by type identity function", "[codecs]")
     REQUIRE(sm.get(3) == Catch::Approx(7.333));
 }
 
+TEST_CASE("codecs can be definded by functor objects", "[codecs]")
+{
+    using namespace bw::testhelper;
+
+    // clang-format off
+    struct key_codec_encode_functor : public conversion_functor<int, std::string>
+    {
+        key_codec_encode_functor(): conversion_functor<int, std::string>(
+            "KEY_ENCODE_FUNCTOR", [](int key){ return "key-" + std::to_string(key); })
+        {}
+    };
+    
+    struct key_codec_decode_functor : public conversion_functor<std::string, int>
+    {
+        key_codec_decode_functor(): conversion_functor<std::string, int>(
+            "KEY_DECODE_FUNCTOR", [](std::string key_str){ return std::atoi(key_str.substr(4).c_str()); })
+        {}
+    };
+
+    struct value_codec_encode_functor : public conversion_functor<double, std::string>
+    {
+        value_codec_encode_functor(): conversion_functor<double, std::string>(
+            "VALUE_ENCODE_FUNCTOR", [](double value){ return "value-" +  std::to_string(value); })
+        {}
+    };
+
+    struct value_codec_decode_functor : public conversion_functor<std::string, double>
+    {
+        value_codec_decode_functor(): conversion_functor<std::string, double>(
+            "VALUE_DECODE_FUNCTOR", [](std::string value_str){ return std::atof(value_str.substr(6).c_str()); })
+        {}
+    };
+    // clang-format on
+
+    auto kc = key_codec(key_codec_encode_functor{}, key_codec_decode_functor{});
+    auto vc = value_codec(value_codec_encode_functor{}, value_codec_decode_functor{});
+    sqlitemap sm(config(kc, vc));
+
+    REQUIRE_NOTHROW(sm.set(42, 0.1234));
+    REQUIRE(sm.get(42) == Catch::Approx(0.1234));
+
+    REQUIRE_NOTHROW(sm.del(42));
+    REQUIRE_THROWS_AS(sm.get(42), sqlitemap_error);
+
+    REQUIRE_NOTHROW(sm.insert({{1, 9.111}, {2, 8.222}, {3, 7.333}}));
+    REQUIRE(sm.get(1) == Catch::Approx(9.111));
+    REQUIRE(sm.get(2) == Catch::Approx(8.222));
+    REQUIRE(sm.get(3) == Catch::Approx(7.333));
+}
+
 template <typename T> T create_test_value()
 {
     if constexpr (std::is_same_v<T, std::string>)
@@ -327,4 +378,211 @@ TEST_CASE("use std::variant to store different types in one table")
 
     REQUIRE(std::get<std::string>(sm.get("k1")) == "Hello World!");
     REQUIRE(std::get<int>(sm.get("k2")) == 42);
+}
+
+TEST_CASE("sqlitemap_t can be used as a member variable referencing a sqlitemap specialization",
+          "[codecs]")
+{
+    struct Post
+    {
+        std::string id;
+        std::string content;
+    };
+
+    class PostRepository
+    {
+      public:
+        PostRepository()
+            : db_(config(value_codec(post_to_string, string_to_post))
+                      .log_level(log_level::debug)
+                      .table("posts"))
+        {
+        }
+
+        sqlitemap_t<Post>& db()
+        {
+            return db_;
+        }
+
+        std::optional<Post> find_post(const std::string& id)
+        {
+            return db_.try_get(id);
+        }
+
+        Post save(const Post& p)
+        {
+            db_.set(p.id, p);
+            db_.commit();
+            return db_.get(p.id);
+        }
+
+      private:
+        static std::string post_to_string(const Post& p)
+        {
+            return p.id + "|" + p.content;
+        }
+
+        static Post string_to_post(const std::string& s)
+        {
+            auto delimiter_pos = s.find('|');
+            return Post{s.substr(0, delimiter_pos), s.substr(delimiter_pos + 1)};
+        }
+        sqlitemap_t<Post> db_;
+    };
+
+    PostRepository post_repo;
+
+    REQUIRE(post_repo.db().size() == 0);
+    REQUIRE_FALSE(post_repo.find_post("p1"));
+
+    post_repo.save({"p1", "Hello World!"});
+
+    REQUIRE(post_repo.db().size() == 1);
+    REQUIRE(post_repo.find_post("p1")->content == "Hello World!");
+}
+
+TEST_CASE("sqlitemap_t codec alias helpers simplify referencing specialized sqlitemap types.",
+          "[codecs]")
+{
+    auto int_to_string = [](int i) { return std::to_string(i); };
+    auto string_to_int = [](const std::string& s) { return std::atoi(s.c_str()); };
+
+    TempDir temp_dir(Config().enable_logging());
+    std::string file = (temp_dir.path() / "db.sqlite").string();
+
+    using SM_DEFAULT = sqlitemap_t<>;
+    {
+        SM_DEFAULT sm_default(
+            config().filename(file).table("SM_DEFAULT").log_level(log_level::debug));
+        sm_default["k1"] = "v1";
+        REQUIRE(sm_default.get("k1") == "v1");
+    }
+
+    using SM_KC_0ARG = sqlitemap_t<key_codec_t<>>;
+    {
+        SM_KC_0ARG sm_kc_0arg(
+            config().filename(file).table("SM_KC_0ARG").log_level(log_level::debug));
+        sm_kc_0arg["k1"] = "v1";
+        REQUIRE((sm_kc_0arg["k1"] == "v1"));
+    }
+
+    using SM_KC_1ARG = sqlitemap_t<key_codec_t<int>>;
+    {
+        SM_KC_1ARG sm_kc_1arg(config<int, std::string>()
+                                  .filename(file)
+                                  .table("SM_KC_1ARG")
+                                  .log_level(log_level::debug));
+        sm_kc_1arg[1] = "v1";
+        REQUIRE((sm_kc_1arg[1] == "v1"));
+    }
+
+    using SM_KC_2ARG = sqlitemap_t<key_codec_t<int, std::string>>;
+    {
+        SM_KC_2ARG sm_kc_2arg(config(key_codec(int_to_string, string_to_int))
+                                  .filename(file)
+                                  .table("SM_KC_2ARG")
+                                  .log_level(log_level::debug));
+        sm_kc_2arg[1] = "v1";
+        REQUIRE((sm_kc_2arg[1] == "v1"));
+    }
+
+    using SM_VC_0ARG = sqlitemap_t<value_codec_t<>>;
+    {
+        SM_VC_0ARG sm_vc_0arg(
+            config().filename(file).table("SM_VC_0ARG").log_level(log_level::debug));
+        sm_vc_0arg["k1"] = "v1";
+        REQUIRE((sm_vc_0arg["k1"] == "v1"));
+    }
+
+    using SM_VC_1ARG = sqlitemap_t<value_codec_t<int>>;
+    {
+        SM_VC_1ARG sm_vc_1arg(config<std::string, int>()
+                                  .filename(file)
+                                  .table("SM_VC_1ARG")
+                                  .log_level(log_level::debug));
+        sm_vc_1arg["k1"] = 1;
+        REQUIRE(sm_vc_1arg.get("k1") == 1);
+    }
+
+    using SM_VC_2ARG = sqlitemap_t<value_codec_t<int, std::string>>;
+    {
+        SM_VC_2ARG sm_vc_2arg(config(value_codec(int_to_string, string_to_int))
+                                  .filename(file)
+                                  .table("SM_VC_2ARG")
+                                  .log_level(log_level::debug));
+        sm_vc_2arg["k1"] = 1;
+        REQUIRE(sm_vc_2arg.get("k1") == 1);
+    }
+
+    using SM_VC_BY_VALUE = sqlitemap_t<bw::testhelper::custom>;
+    {
+        using namespace bw::testhelper;
+        SM_VC_BY_VALUE sm_vc_by_value(
+            config(value_codec([&](const custom& c) { return int_to_string(c.counter); },
+                               [&](const std::string& s) { return custom{string_to_int(s)}; }))
+                .filename(file)
+                .table("SM_VC_BY_VALUE")
+                .log_level(log_level::debug));
+        sm_vc_by_value["k1"] = custom{1};
+        REQUIRE(sm_vc_by_value.get("k1").counter == 1);
+    }
+
+    using SM_VC_BY_VALUE_INT = sqlitemap_t<int>;
+    {
+        SM_VC_BY_VALUE_INT sm_vc_by_value_int(config<std::string, int>()
+                                                  .filename(file)
+                                                  .table("SM_VC_BY_VALUE_INT")
+                                                  .log_level(log_level::debug));
+        sm_vc_by_value_int["k1"] = 1;
+        REQUIRE(sm_vc_by_value_int.get("k1") == 1);
+    }
+
+    using SM_KC_VC = sqlitemap_t<key_codec_t<int, std::string>, value_codec_t<int, std::string>>;
+    {
+        SM_KC_VC sm_kc_vc(config(key_codec(int_to_string, string_to_int),
+                                 value_codec(int_to_string, string_to_int))
+                              .filename(file)
+                              .table("SM_KC_VC")
+                              .log_level(log_level::debug));
+        sm_kc_vc[1] = 1;
+        REQUIRE(sm_kc_vc.get(1) == 1);
+    }
+
+    using SM_KC_NAT_VC = sqlitemap_t<int, value_codec_t<int, std::string>>;
+    {
+        SM_KC_NAT_VC sm_kc_nat_vc(
+            config(key_codec<int>(), value_codec(int_to_string, string_to_int))
+                .filename(file)
+                .table("SM_KC_NAT_VC")
+                .log_level(log_level::debug));
+        sm_kc_nat_vc[1] = 1;
+        REQUIRE(sm_kc_nat_vc.get(1) == 1);
+    }
+
+    using SM_KC_VC_NAT = sqlitemap_t<key_codec_t<int, std::string>, bool>;
+    {
+        SM_KC_VC_NAT sm_kc_vc_nat(
+            config(key_codec(int_to_string, string_to_int), value_codec<bool>())
+                .filename(file)
+                .table("SM_KC_VC_NAT")
+                .log_level(log_level::debug));
+        sm_kc_vc_nat[1] = true;
+        REQUIRE((sm_kc_vc_nat.get(1) == true));
+    }
+
+    using SM_KC_NAT_VC_NAT = sqlitemap_t<int, bool>;
+    {
+        SM_KC_NAT_VC_NAT sm_kc_nat_vc_nat(config<int, bool>()
+                                              .filename(file)
+                                              .table("SM_KC_NAT_VC_NAT")
+                                              .log_level(log_level::debug));
+        sm_kc_nat_vc_nat[1] = true;
+        REQUIRE((sm_kc_nat_vc_nat.get(1) == true));
+    }
+
+    auto tables = bw::sqlitemap::get_tablenames(file);
+    REQUIRE(tables == std::vector<std::string>{
+                          "SM_DEFAULT", "SM_KC_0ARG", "SM_KC_1ARG", "SM_KC_2ARG", "SM_VC_0ARG",
+                          "SM_VC_1ARG", "SM_VC_2ARG", "SM_VC_BY_VALUE", "SM_VC_BY_VALUE_INT",
+                          "SM_KC_VC", "SM_KC_NAT_VC", "SM_KC_VC_NAT", "SM_KC_NAT_VC_NAT"});
 }

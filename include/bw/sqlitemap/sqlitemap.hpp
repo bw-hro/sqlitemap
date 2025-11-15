@@ -1,5 +1,5 @@
 // sqlitemap — Persistent Map Backed by SQLite
-// version 1.1.0
+// version 1.2.0
 // https://github.com/bw-hro/sqlitemap
 
 // SPDX-FileCopyrightText: 2024-present Benno Waldhauer
@@ -476,8 +476,8 @@ template <typename IN_T, typename OUT_T> struct codec
     using in_type = IN_T;
     using out_type = OUT_T;
 
-    const std::function<OUT_T(const IN_T&)> encode;
-    const std::function<IN_T(const OUT_T&)> decode;
+    std::function<OUT_T(const IN_T&)> encode;
+    std::function<IN_T(const OUT_T&)> decode;
 };
 
 struct key_codec_tag
@@ -490,7 +490,8 @@ struct key_codec : public codec<IN_T, OUT_T>, public key_codec_tag
     using codec<IN_T, OUT_T>::codec;
 
     key_codec(std::function<OUT_T(const IN_T&)> encode, std::function<IN_T(const OUT_T&)> decode)
-        : codec<IN_T, OUT_T>{encode, decode}
+        : codec<IN_T, OUT_T>{std::forward<std::function<OUT_T(const IN_T&)>>(encode),
+                             std::forward<std::function<IN_T(const OUT_T&)>>(decode)}
     {
     }
 };
@@ -516,7 +517,8 @@ struct value_codec : public codec<IN_T, OUT_T>, public value_codec_tag
     using codec<IN_T, OUT_T>::codec;
 
     value_codec(std::function<OUT_T(const IN_T&)> encode, std::function<IN_T(const OUT_T&)> decode)
-        : codec<IN_T, OUT_T>{encode, decode}
+        : codec<IN_T, OUT_T>{std::forward<std::function<OUT_T(const IN_T&)>>(encode),
+                             std::forward<std::function<IN_T(const OUT_T&)>>(decode)}
     {
     }
 };
@@ -555,11 +557,13 @@ template <typename T, typename E, typename D> auto taged_codec_from(E encoder, D
 
     if constexpr (std::is_same_v<T, key_codec_tag>)
     {
-        return key_codec<std::decay_t<ea_type>, std::decay_t<er_type>>{encoder, decoder};
+        return key_codec<std::decay_t<ea_type>, std::decay_t<er_type>>{std::forward<E>(encoder),
+                                                                       std::forward<D>(decoder)};
     }
     else if constexpr (std::is_same_v<T, value_codec_tag>)
     {
-        return value_codec<std::decay_t<ea_type>, std::decay_t<er_type>>{encoder, decoder};
+        return value_codec<std::decay_t<ea_type>, std::decay_t<er_type>>{std::forward<E>(encoder),
+                                                                         std::forward<D>(decoder)};
     }
     else
     {
@@ -590,9 +594,18 @@ template <typename TAG, typename TYPE> auto taged_codec_from()
 
 template <typename KC, typename VC> struct codec_pair
 {
-    codec_pair(KC k, VC v)
-        : key_codec(k)
-        , value_codec(v)
+    using key_in_type = typename KC::in_type;
+    using key_out_type = typename KC::out_type;
+    using value_in_type = typename VC::in_type;
+    using value_out_type = typename VC::out_type;
+
+    KC key_codec;
+    VC value_codec;
+
+    template <typename KCT, typename VCT>
+    codec_pair(KCT&& k, VCT&& v)
+        : key_codec(std::forward<KCT>(k))
+        , value_codec(std::forward<VCT>(v))
     {
         static_assert(is_key_codec<std::decay_t<KC>>::value,
                       "KC must be a specialization of key_codec<IN_T, OUT_T>");
@@ -600,15 +613,10 @@ template <typename KC, typename VC> struct codec_pair
         static_assert(is_value_codec<std::decay_t<VC>>::value,
                       "VC must be a specialization of value_codec<IN_T, OUT_T>");
     }
-
-    using key_in_type = typename KC::in_type;
-    using key_out_type = typename KC::out_type;
-    using value_in_type = typename VC::in_type;
-    using value_out_type = typename VC::out_type;
-
-    const KC key_codec;
-    const VC value_codec;
 };
+
+template <typename KCT, typename VCT>
+codec_pair(KCT&&, VCT&&) -> codec_pair<std::decay_t<KCT>, std::decay_t<VCT>>;
 
 template <typename T> struct is_codec_pair : std::false_type
 {
@@ -623,7 +631,8 @@ template <typename KC, typename VC> struct is_codec_pair<codec_pair<KC, VC>> : s
 
 template <typename E, typename D> auto key_codec(E encoder, D decoder)
 {
-    return codecs::taged_codec_from<codecs::key_codec_tag, E, D>(encoder, decoder);
+    return codecs::taged_codec_from<codecs::key_codec_tag, E, D>(std::forward<E>(encoder),
+                                                                 std::forward<D>(decoder));
 }
 
 // use identity function of type T to define a key codec
@@ -640,7 +649,8 @@ inline auto default_key_codec = key_codec<std::string>();
 
 template <typename E, typename D> auto value_codec(E encoder, D decoder)
 {
-    return codecs::taged_codec_from<codecs::value_codec_tag, E, D>(encoder, decoder);
+    return codecs::taged_codec_from<codecs::value_codec_tag, E, D>(std::forward<E>(encoder),
+                                                                   std::forward<D>(decoder));
 }
 
 // use identity function of type T to define a value codec
@@ -685,22 +695,28 @@ constexpr log_level default_log_level = log_level::off;
 template <typename CODEC_PAIR> class configuration
 {
   public:
-    configuration(CODEC_PAIR codecs)
-        : _codecs(codecs)
+    configuration(CODEC_PAIR&& codecs)
+        : _codecs(std::forward<CODEC_PAIR>(codecs))
     {
         static_assert(codecs::is_codec_pair<std::decay_t<CODEC_PAIR>>::value,
                       "CODEC_PAIR must be a specialization of codec_pair<KC, VC>");
     }
 
-    CODEC_PAIR codecs() const
+    const CODEC_PAIR& codecs() const
     {
         return _codecs;
     }
 
-    configuration& filename(std::string filename)
+    configuration& filename(std::string filename) &
     {
-        _filename = filename;
+        _filename = std::move(filename);
         return *this;
+    }
+
+    configuration&& filename(std::string filename) &&
+    {
+        _filename = std::move(filename);
+        return std::move(*this);
     }
 
     std::string filename() const
@@ -708,10 +724,16 @@ template <typename CODEC_PAIR> class configuration
         return _filename;
     }
 
-    configuration& table(std::string table)
+    configuration& table(std::string table) &
     {
-        _table = table;
+        _table = std::move(table);
         return *this;
+    }
+
+    configuration&& table(std::string table) &&
+    {
+        _table = std::move(table);
+        return std::move(*this);
     }
 
     std::string table() const
@@ -719,10 +741,16 @@ template <typename CODEC_PAIR> class configuration
         return _table;
     }
 
-    configuration& mode(operation_mode mode)
+    configuration& mode(operation_mode mode) &
     {
         _mode = mode;
         return *this;
+    }
+
+    configuration&& mode(operation_mode mode) &&
+    {
+        _mode = mode;
+        return std::move(*this);
     }
 
     operation_mode mode() const
@@ -730,10 +758,16 @@ template <typename CODEC_PAIR> class configuration
         return _mode;
     }
 
-    configuration& auto_commit(bool auto_commit)
+    configuration& auto_commit(bool auto_commit) &
     {
         _auto_commit = auto_commit;
         return *this;
+    }
+
+    configuration&& auto_commit(bool auto_commit) &&
+    {
+        _auto_commit = auto_commit;
+        return std::move(*this);
     }
 
     bool auto_commit() const
@@ -741,10 +775,15 @@ template <typename CODEC_PAIR> class configuration
         return _auto_commit;
     }
 
-    configuration& log_level(log_level log_level)
+    configuration& log_level(bw::sqlitemap::log_level log_level) &
     {
         _log_level = log_level;
         return *this;
+    }
+    configuration&& log_level(bw::sqlitemap::log_level log_level) &&
+    {
+        _log_level = log_level;
+        return std::move(*this);
     }
 
     bw::sqlitemap::log_level log_level() const
@@ -752,10 +791,16 @@ template <typename CODEC_PAIR> class configuration
         return _log_level;
     }
 
-    configuration& log_impl(logger::log_function log_impl)
+    configuration& log_impl(logger::log_function log_impl) &
     {
-        _log_impl = log_impl;
+        _log_impl = std::move(log_impl);
         return *this;
+    }
+
+    configuration&& log_impl(logger::log_function log_impl) &&
+    {
+        _log_impl = std::move(log_impl);
+        return std::move(*this);
     }
 
     logger::log_function log_impl() const
@@ -763,29 +808,34 @@ template <typename CODEC_PAIR> class configuration
         return _log_impl;
     }
 
-    configuration& pragma(const std::string& flag, int value)
+    configuration& pragma(std::string flag, int value) &
     {
-        return pragma(flag, std::to_string(value));
+        return pragma(std::move(flag), std::to_string(value));
     }
 
-    configuration& pragma(const std::string& flag, const std::string& value)
+    configuration&& pragma(std::string flag, int value) &&
     {
-        return pragma("PRAGMA " + flag + " = " + value);
+        return std::move(pragma(std::move(flag), std::to_string(value)));
     }
 
-    configuration& pragma(const std::string& statement)
+    configuration& pragma(std::string flag, std::string value) &
     {
-        std::string prefix = "PRAGMA ";
-        if (statement.size() < prefix.size() ||
-            !std::equal(prefix.begin(), prefix.end(), statement.begin(),
-                        [](char a, char b) { return std::tolower(a) == std::tolower(b); }))
-        {
-            _pragma_statements.push_back(prefix + statement);
-            return *this;
-        }
+        return pragma("PRAGMA " + std::move(flag) + " = " + std::move(value));
+    }
 
-        _pragma_statements.push_back(statement);
-        return *this;
+    configuration&& pragma(std::string flag, std::string value) &&
+    {
+        return std::move(pragma("PRAGMA " + std::move(flag) + " = " + std::move(value)));
+    }
+
+    configuration& pragma(std::string statement) &
+    {
+        return add_pragma_statement(std::move(statement));
+    }
+
+    configuration&& pragma(std::string statement) &&
+    {
+        return std::move(add_pragma_statement(std::move(statement)));
     }
 
     const std::vector<std::string>& pragmas() const
@@ -794,6 +844,21 @@ template <typename CODEC_PAIR> class configuration
     }
 
   private:
+    configuration& add_pragma_statement(std::string statement)
+    {
+        static constexpr std::string_view prefix = "PRAGMA ";
+        bool has_prefix =
+            statement.size() >= prefix.size() &&
+            std::equal(prefix.begin(), prefix.end(), statement.begin(),
+                       [](char a, char b) { return std::tolower(a) == std::tolower(b); });
+
+        if (!has_prefix)
+            statement = std::string(prefix) + std::move(statement);
+
+        _pragma_statements.push_back(std::move(statement));
+        return *this;
+    }
+
     CODEC_PAIR _codecs;
     std::string _filename = default_filename;
     std::string _table = default_table;
@@ -804,29 +869,30 @@ template <typename CODEC_PAIR> class configuration
     std::vector<std::string> _pragma_statements;
 };
 
-template <typename CODEC_PAIR> auto config(CODEC_PAIR codec)
+template <typename CODEC_ARG> auto config(CODEC_ARG codec)
 {
-    if constexpr (codecs::is_codec_pair<std::decay_t<CODEC_PAIR>>::value)
+    if constexpr (codecs::is_codec_pair<std::decay_t<CODEC_ARG>>::value)
     {
-        return configuration(codec);
+        return configuration(std::forward<CODEC_ARG>(codec));
     }
-    else if constexpr (codecs::is_key_codec<std::decay_t<CODEC_PAIR>>::value)
+    else if constexpr (codecs::is_key_codec<std::decay_t<CODEC_ARG>>::value)
     {
-        return configuration(codecs::codec_pair(codec, default_value_codec));
+        return configuration(
+            codecs::codec_pair(std::forward<CODEC_ARG>(codec), default_value_codec));
     }
-    else if constexpr (codecs::is_value_codec<std::decay_t<CODEC_PAIR>>::value)
+    else if constexpr (codecs::is_value_codec<std::decay_t<CODEC_ARG>>::value)
     {
-        return configuration(codecs::codec_pair(default_key_codec, codec));
+        return configuration(codecs::codec_pair(default_key_codec, std::forward<CODEC_ARG>(codec)));
     }
     else
     {
-        static_assert(codecs::unknown_codec_tag<CODEC_PAIR>::value, "Unknown CODEC_PAIR type");
+        static_assert(codecs::unknown_codec_tag<CODEC_ARG>::value, "Unknown CODEC_ARG type");
     }
 }
 
-template <typename KC, typename VC> auto config(KC key_codec, VC value_codec)
+template <typename KC, typename VC> auto config(KC&& key_codec, VC&& value_codec)
 {
-    return config(codecs::codec_pair(key_codec, value_codec));
+    return config(codecs::codec_pair(std::forward<KC>(key_codec), std::forward<VC>(value_codec)));
 }
 
 // Uses key type K and value type V to create configuration from
@@ -1336,12 +1402,17 @@ template <typename K, typename V> struct sqlitemap_node_type
  * @tparam CODEC_PAIR The codec pair type used for encoding and decoding keys and values.
  * Defaults to the codec pair from the global config().
  *
+ * @note To simplify construction of `sqlitemap` instances with different combinations of
+ * codecs or native types, the helper alias `sqlitemap_t` is provided. It allows users
+ * to create `sqlitemap` types without specifying the full codec pair explicitly,
+ * reducing boilerplate and improving readability—especially when working with custom
+ * codecs, inferred types, or mixed key/value configurations.
  *
  * @note Only single-pass iteration is supported to enable lazy evaluation and caching of query
  * results. As a result, iterators returned by STL-like operations are intended solely for data
  * access; advancing or reusing them in multiple passes is not supported.
  */
-template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
+template <typename CODEC_PAIR = std::decay_t<decltype(config().codecs())>> class sqlitemap
 {
   public:
     using key_type = typename CODEC_PAIR::key_in_type;
@@ -1467,13 +1538,44 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
     {
         try
         {
-            close();
+            if (db != nullptr)
+            {
+                close();
+            }
         }
         catch (std::exception& ex)
         {
             log().error(std::string("Descruction of sqlitemap failed. Error: ") + ex.what());
         }
     }
+
+    sqlitemap(sqlitemap&& other) noexcept
+        : _config(std::move(other._config))
+        , _in_temp(other._in_temp)
+        , _logger(std::move(other._logger))
+        , db(other.db)
+    {
+        other.db = nullptr;
+        log().debug("sqlitemap moved successfully");
+    }
+
+    sqlitemap& operator=(sqlitemap&& other) noexcept
+    {
+        if (this != &other)
+        {
+            _config = std::move(other._config);
+            _in_temp = other._in_temp;
+            _logger = std::move(other._logger);
+            db = other.db;
+            other.db = nullptr;
+            log().debug("sqlitemap move assigned successfully");
+        }
+        return *this;
+    }
+
+    // disable copy constructor and assignment operator
+    sqlitemap(const sqlitemap&) = delete;
+    sqlitemap& operator=(const sqlitemap&) = delete;
 
     void open_database(const std::string& file)
     {
@@ -2013,7 +2115,7 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
 
         // Close the database connection
         sqlite3_close(db);
-        log().debug("Database closed");
+        log().debug("Database '" + config().filename() + "' closed");
 
         if (in_temp())
         {
@@ -2260,5 +2362,315 @@ template <typename CODEC_PAIR = decltype(config().codecs())> class sqlitemap
     bool _in_temp = false;
     logger _logger;
 };
+
+// Helper alias templates for sqlitemap with different number of template arguments
+
+struct sqlitemap_alias_no_arg
+{
+    using codec_pair = std::decay_t<decltype(config().codecs())>;
+    using type = sqlitemap<codec_pair>;
+};
+
+// clang-format off
+
+template <typename CODEC_ARG, typename Enable = void> struct sqlitemap_alias_1_arg;
+
+// argument is a codec pair, key codec or value codec
+template <typename CODEC_ARG> struct sqlitemap_alias_1_arg<CODEC_ARG, std::enable_if_t<
+    codecs::is_codec_pair<std::decay_t<CODEC_ARG>>::value>>
+{
+    using type = sqlitemap<std::decay_t<CODEC_ARG>>;
+};
+
+// argument is a key codec
+template <typename CODEC_ARG> struct sqlitemap_alias_1_arg<CODEC_ARG, std::enable_if_t<
+    codecs::is_key_codec<std::decay_t<CODEC_ARG>>::value>>
+{
+    using value_codec_t = decltype(default_value_codec);
+    using type = sqlitemap<codecs::codec_pair<std::decay_t<CODEC_ARG>, value_codec_t>>;
+};
+
+// argument is a value codec
+template <typename CODEC_ARG> struct sqlitemap_alias_1_arg<CODEC_ARG, std::enable_if_t<
+    codecs::is_value_codec<std::decay_t<CODEC_ARG>>::value>>
+{
+    using key_codec_t = decltype(default_key_codec);
+    using type = sqlitemap<codecs::codec_pair<key_codec_t, std::decay_t<CODEC_ARG>>>;
+};
+
+// argument is not a codec pair, key codec or value codec, but a value type
+template <typename CODEC_ARG> struct sqlitemap_alias_1_arg<CODEC_ARG, std::enable_if_t<
+!(
+    codecs::is_codec_pair<std::decay_t<CODEC_ARG>>::value ||
+    codecs::is_key_codec<std::decay_t<CODEC_ARG>>::value  ||
+    codecs::is_value_codec<std::decay_t<CODEC_ARG>>::value
+)>>
+{
+    using key_codec_t = decltype(default_key_codec);
+    using value_codec_out_t = std::conditional_t<details::has_native_sqlite_support<CODEC_ARG>(),CODEC_ARG, std::string>;
+    using value_codec_t = codecs::value_codec<CODEC_ARG, value_codec_out_t>;
+    using type = sqlitemap<codecs::codec_pair<key_codec_t, value_codec_t>>;
+};
+
+
+// two arguments: key codec and value codec
+
+template <typename KEY_CODEC, typename VALUE_CODEC, typename Enable = void>
+struct sqlitemap_alias_2_arg;
+
+template <typename KEY_CODEC, typename VALUE_CODEC>
+struct sqlitemap_alias_2_arg<KEY_CODEC, VALUE_CODEC, std::enable_if_t<
+(
+    codecs::is_key_codec<std::decay_t<KEY_CODEC>>::value &&
+    codecs::is_value_codec<std::decay_t<VALUE_CODEC>>::value
+)>>
+{
+    using decayed_key_t = std::decay_t<KEY_CODEC>;
+    using decayed_value_t = std::decay_t<VALUE_CODEC>;
+
+    // require that the user really provided a key codec and a value codec
+    static_assert(codecs::is_key_codec<decayed_key_t>::value,
+                  "sqlitemap_alias_2_arg: KEY_CODEC must be a key codec");
+    static_assert(codecs::is_value_codec<decayed_value_t>::value,
+                  "sqlitemap_alias_2_arg: VALUE_CODEC must be a value codec");
+
+    using type = sqlitemap<codecs::codec_pair<decayed_key_t, decayed_value_t>>;
+};
+
+template <typename KEY_CODEC, typename VALUE_CODEC>
+struct sqlitemap_alias_2_arg<KEY_CODEC, VALUE_CODEC, std::enable_if_t<
+(
+    details::has_native_sqlite_support<std::decay_t<KEY_CODEC>>() &&
+    codecs::is_value_codec<std::decay_t<VALUE_CODEC>>::value
+)>>
+{
+    using decayed_key_t = std::decay_t<KEY_CODEC>;
+    using decayed_value_t = std::decay_t<VALUE_CODEC>;
+    using key_codec_t = codecs::key_codec<decayed_key_t, decayed_key_t>;
+    using type = sqlitemap<codecs::codec_pair<key_codec_t, decayed_value_t>>;
+};
+
+template <typename KEY_CODEC, typename VALUE_CODEC>
+struct sqlitemap_alias_2_arg<KEY_CODEC, VALUE_CODEC, std::enable_if_t<
+(
+    codecs::is_key_codec<std::decay_t<KEY_CODEC>>::value &&
+    details::has_native_sqlite_support<std::decay_t<VALUE_CODEC>>()
+)>>
+{
+    using decayed_key_t = std::decay_t<KEY_CODEC>;
+    using decayed_value_t = std::decay_t<VALUE_CODEC>;
+    using value_codec_t = codecs::value_codec<decayed_value_t, decayed_value_t>;
+    using type = sqlitemap<codecs::codec_pair<decayed_key_t, value_codec_t>>;
+};
+
+template <typename KEY_TYPE, typename VALUE_TYPE>
+struct sqlitemap_alias_2_arg<KEY_TYPE, VALUE_TYPE, std::enable_if_t<
+(
+    details::has_native_sqlite_support<std::decay_t<KEY_TYPE>>() &&
+    details::has_native_sqlite_support<std::decay_t<VALUE_TYPE>>()
+)>>
+{
+    using decayed_key_t = std::decay_t<KEY_TYPE>;
+    using decayed_value_t = std::decay_t<VALUE_TYPE>;
+    using key_codec_t = codecs::key_codec<decayed_key_t, decayed_key_t>;
+    using value_codec_t = codecs::value_codec<decayed_value_t, decayed_value_t>;
+    using type = sqlitemap<codecs::codec_pair<key_codec_t, value_codec_t>>;
+};
+
+// clang-format on
+
+template <typename... Ts> struct sqlitemap_t_helper;
+
+template <> struct sqlitemap_t_helper<>
+{
+    using type = typename sqlitemap_alias_no_arg::type;
+};
+
+template <typename T> struct sqlitemap_t_helper<T>
+{
+    using type = typename sqlitemap_alias_1_arg<T>::type;
+};
+
+template <typename K, typename V> struct sqlitemap_t_helper<K, V>
+{
+    using type = typename sqlitemap_alias_2_arg<K, V>::type;
+};
+
+/**
+ * @brief Helper alias for constructing `sqlitemap` types with flexible template arguments.
+ *
+ * `sqlitemap_t` is a variadic template alias that selects the appropriate `sqlitemap`
+ * instantiation based on the number and nature of its template arguments. It eliminates
+ * the need to manually specify codec pairs and provides a concise, user-friendly way to
+ * construct `sqlitemap` types from:
+ *
+ *   - no arguments (use default key/value codecs from `config()`)
+ *   - a single codec pair, key codec, value codec, or native C++ type
+ *   - two arguments describing key codec/type and value codec/type
+ *
+ * The alias delegates to internal helper specializations that analyze the template
+ * arguments and derive the correct codec pair. This allows users to write:
+ *
+ * @code
+ * sqlitemap_t<>                 // uses default configured codecs
+ * sqlitemap_t<int>              // key: int (native), default value codec
+ * sqlitemap_t<key_codec<int>>() // custom key codec
+ * sqlitemap_t<int, std::string> // both native types, identity codecs generated
+ * @endcode
+ *
+ * without manually constructing:
+ *
+ * @code
+ * sqlitemap<codecs::codec_pair<codecs::key_codec<...>, codecs::value_codec<...>>>
+ * @endcode
+ *
+ * Supported usage patterns:
+ *
+ * 1. **No arguments**
+ *    Uses the default codec pair derived from `config().codecs()`.
+ *
+ * 2. **Single argument**
+ *    - If it is a codec pair  → use it directly.
+ *    - If it is a key codec   → pair with default value codec.
+ *    - If it is a value codec → pair with default key codec.
+ *    - If it is a native type → identity codec if supported by SQLite, otherwise fallback
+ *                               value codec with storage type `std::string`.
+ *
+ * 3. **Two arguments**
+ *    - If both are codecs → use them directly.
+ *    - If one is native and one is a codec → wrap the native type
+ *      in the appropriate identity codec.
+ *    - If both are native types → construct corresponding identity codecs automatically.
+ *
+ * @tparam Ts Template parameters controlling how the final `sqlitemap` type is derived:
+ *   - `<>`     → default configuration
+ *   - `<T>`    → codec pair, key codec, value codec, or native type
+ *   - `<K, V>` → explicit key/value codecs or native types
+ *
+ * @note This alias performs compile-time selection of codecs. Native types must have native
+ *       SQLite support (e.g., integral types, floating-point types, std::string, blob,
+ *       nullptr_t). Types without native support must be wrapped in custom codecs.
+ *
+ * @see sqlitemap, key_codec, value_codec, codec_pair
+ */
+template <typename... Ts> using sqlitemap_t = typename sqlitemap_t_helper<Ts...>::type;
+
+// Helper alias templates for value_codec
+
+template <typename... Ts> struct value_codec_t_helper;
+
+template <> struct value_codec_t_helper<>
+{
+    using type = decltype(default_value_codec);
+};
+
+template <typename IN_OUT_T> struct value_codec_t_helper<IN_OUT_T>
+{
+    using type = codecs::value_codec<IN_OUT_T, IN_OUT_T>;
+};
+
+template <typename IN_T, typename OUT_T> struct value_codec_t_helper<IN_T, OUT_T>
+{
+    using type = codecs::value_codec<IN_T, OUT_T>;
+};
+
+/**
+ * @brief Convenience alias for constructing value codec types with flexible template arguments.
+ *
+ * `value_codec_t` simplifies the creation of `codecs::value_codec` types by supporting
+ * multiple usage patterns with zero, one, or two template parameters.
+ *
+ * **Usage patterns**
+ *
+ * 1. **No template arguments**
+ *    Uses the library's `default_value_codec`.
+ *    @code
+ *    using vc = value_codec_t<>;  // default value codec
+ *    @endcode
+ *
+ * 2. **Single template argument**
+ *    Interpreted as both the input and output type of the codec.
+ *    @code
+ *    using vc = value_codec_t<int>;  // value_codec<int, int>
+ *    @endcode
+ *
+ * 3. **Two template arguments**
+ *    Explicitly specifies the input and output types.
+ *    @code
+ *    using vc = value_codec_t<MyType, std::string>;  // value_codec<MyType, std::string>
+ *    @endcode
+ *
+ * **Summary**
+ *
+ * This alias reduces boilerplate when defining value codecs, improves readability,
+ * and ensures consistent construction of `codecs::value_codec` types throughout the codebase.
+ *
+ * @tparam Ts
+ *   - `<>`            → use default value codec
+ *   - `<IN_OUT_T>`    → create `value_codec<IN_OUT_T, IN_OUT_T>`
+ *   - `<IN_T, OUT_T>` → create `value_codec<IN_T, OUT_T>`
+ *
+ * @see codecs::value_codec
+ */
+template <typename... Ts> using value_codec_t = typename value_codec_t_helper<Ts...>::type;
+
+// Helper alias templates for key_codec
+
+template <typename... Ts> struct key_codec_t_helper;
+
+template <> struct key_codec_t_helper<>
+{
+    using type = decltype(default_key_codec);
+};
+
+template <typename IN_OUT_T> struct key_codec_t_helper<IN_OUT_T>
+{
+    using type = codecs::key_codec<IN_OUT_T, IN_OUT_T>;
+};
+
+template <typename IN_T, typename OUT_T> struct key_codec_t_helper<IN_T, OUT_T>
+{
+    using type = codecs::key_codec<IN_T, OUT_T>;
+};
+
+/**
+ * @brief Convenience alias for constructing key codec types with flexible template arguments.
+ *
+ * `key_codec_t` simplifies the creation of `codecs::key_codec` types by supporting
+ * multiple usage patterns with zero, one, or two template parameters.
+ *
+ * **Usage patterns**
+ *
+ * 1. **No template arguments**
+ *    Uses the library's `default_key_codec`.
+ *    @code
+ *    using kc = key_codec_t<>;  // default key codec
+ *    @endcode
+ *
+ * 2. **Single template argument**
+ *    Interpreted as both the input and output type of the codec.
+ *    @code
+ *    using kc = key_codec_t<int>;  // key_codec<int, int>
+ *    @endcode
+ *
+ * 3. **Two template arguments**
+ *    Explicitly specifies the input and output types.
+ *    @code
+ *    using kc = key_codec_t<MyType, std::string>;  // key_codec<MyType, std::string>
+ *    @endcode
+ *
+ * **Summary**
+ *
+ * This alias reduces boilerplate when defining key codecs, improves readability,
+ * and ensures consistent construction of `codecs::key_codec` types throughout the codebase.
+ *
+ * @tparam Ts
+ *   - `<>`            → use default key codec
+ *   - `<IN_OUT_T>`    → create `key_codec<IN_OUT_T, IN_OUT_T>`
+ *   - `<IN_T, OUT_T>` → create `key_codec<IN_T, OUT_T>`
+ *
+ * @see codecs::key_codec
+ */
+template <typename... Ts> using key_codec_t = typename key_codec_t_helper<Ts...>::type;
 
 } // namespace bw::sqlitemap
