@@ -422,6 +422,75 @@ int main()
 - [sqlitemap_zlib.cpp](examples/sqlitemap_zlib.cpp) demonstrates how to use **sqlitemap** to store compressed values using [zlib](https://github.com/madler/zlib).
 - Please make sure to also inspect [sqlitemap_codecs_tests.cpp](test/catch2/unit_tests/sqlitemap_codecs_tests.cpp) were further details regarding encoding/decoding using codecs are covered.
 
+#### Using `sqlitemap_t` for convenience with sqlitemap type construction
+
+To reduce boilerplate when creating `sqlitemap` instances, the helper alias **`sqlitemap_t`** automatically selects the appropriate codec configuration based on the template arguments you provide.
+
+```c++
+#include <bw/sqlitemap/sqlitemap.hpp>
+
+using namespace bw::sqlitemap;
+
+// Default key/value types (std::string identity)
+sqlitemap_t<> db; // same as just sqlitemap
+
+// Specify only the value type (key codec defaults to std::string identity)
+sqlitemap_t<int> db;
+sqlitemap_t<value_codec_t<my_class, std::string>> db;
+
+// Specify only the key type (value codec defaults to std::string identity)
+sqlitemap_t<key_codec_t<my_class, std::string>> db;
+
+// Specify both key and value types (identity codecs inferred)
+sqlitemap_t<int, double> db;
+
+// Use explicit codec types directly
+sqlitemap_t<key_codec_t<int>, value_codec_t<my_class, std::string> db;
+```
+
+Example showing how `sqlitemap_t`, `key_codec_t` and `value_codec_t` support convenient application-specific type aliases and improve readability:
+
+```c++
+    using namespace bw::sqlitemap;
+
+    template<typename T> blob to_blob(const T& data){...}
+    template<typename T> T from_blob(blob blob){...}
+
+    struct tile_location ...
+    struct tile_bitmap ...
+
+    class tiles
+    {
+      public:
+        using location_codec = key_codec_t<tile_location, blob>;
+        using bitmap_codec = value_codec_t<tile_bitmap, blob>;
+        using tiles_db = sqlitemap_t<location_codec, bitmap_codec>;
+
+        tiles()
+            : data(std::make_unique<tiles_db>(
+                  config(location_codec{to_blob<tile_location>, from_blob<tile_location>},
+                         bitmap_codec{to_blob<tile_bitmap>, from_blob<tile_bitmap>})
+                      .filename("tiles.sqlite")
+                      .table("tiles")))
+        {
+        }
+
+        void save(const tile_location& location, const tile_bitmap& bitmap)
+        {
+            data->set(location, bitmap);
+        }
+
+        tile_bitmap tile_for(const tile_location& location) const
+        {
+            return data->get(location);
+        }
+
+      private:
+        std::unique_ptr<tiles_db> data;
+    };
+
+```
+
 ## Tests / Examples / Additional Documentation
 
 - **sqlitemap** is extensively covered by [unit tests](test), which also serve as documentation and usage examples.

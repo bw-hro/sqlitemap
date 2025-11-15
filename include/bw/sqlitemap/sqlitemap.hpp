@@ -1402,6 +1402,11 @@ template <typename K, typename V> struct sqlitemap_node_type
  * @tparam CODEC_PAIR The codec pair type used for encoding and decoding keys and values.
  * Defaults to the codec pair from the global config().
  *
+ * @note To simplify construction of `sqlitemap` instances with different combinations of
+ * codecs or native types, the helper alias `sqlitemap_t` is provided. It allows users
+ * to create `sqlitemap` types without specifying the full codec pair explicitly,
+ * reducing boilerplate and improving readability—especially when working with custom
+ * codecs, inferred types, or mixed key/value configurations.
  *
  * @note Only single-pass iteration is supported to enable lazy evaluation and caching of query
  * results. As a result, iterators returned by STL-like operations are intended solely for data
@@ -2502,6 +2507,63 @@ template <typename K, typename V> struct sqlitemap_t_helper<K, V>
     using type = typename sqlitemap_alias_2_arg<K, V>::type;
 };
 
+/**
+ * @brief Helper alias for constructing `sqlitemap` types with flexible template arguments.
+ *
+ * `sqlitemap_t` is a variadic template alias that selects the appropriate `sqlitemap`
+ * instantiation based on the number and nature of its template arguments. It eliminates
+ * the need to manually specify codec pairs and provides a concise, user-friendly way to
+ * construct `sqlitemap` types from:
+ *
+ *   - no arguments (use default key/value codecs from `config()`)
+ *   - a single codec pair, key codec, value codec, or native C++ type
+ *   - two arguments describing key codec/type and value codec/type
+ *
+ * The alias delegates to internal helper specializations that analyze the template
+ * arguments and derive the correct codec pair. This allows users to write:
+ *
+ * @code
+ * sqlitemap_t<>                 // uses default configured codecs
+ * sqlitemap_t<int>              // key: int (native), default value codec
+ * sqlitemap_t<key_codec<int>>() // custom key codec
+ * sqlitemap_t<int, std::string> // both native types, identity codecs generated
+ * @endcode
+ *
+ * without manually constructing:
+ *
+ * @code
+ * sqlitemap<codecs::codec_pair<codecs::key_codec<...>, codecs::value_codec<...>>>
+ * @endcode
+ *
+ * Supported usage patterns:
+ *
+ * 1. **No arguments**
+ *    Uses the default codec pair derived from `config().codecs()`.
+ *
+ * 2. **Single argument**
+ *    - If it is a codec pair  → use it directly.
+ *    - If it is a key codec   → pair with default value codec.
+ *    - If it is a value codec → pair with default key codec.
+ *    - If it is a native type → identity codec if supported by SQLite, otherwise fallback
+ *                               value codec with storage type `std::string`.
+ *
+ * 3. **Two arguments**
+ *    - If both are codecs → use them directly.
+ *    - If one is native and one is a codec → wrap the native type
+ *      in the appropriate identity codec.
+ *    - If both are native types → construct corresponding identity codecs automatically.
+ *
+ * @tparam Ts Template parameters controlling how the final `sqlitemap` type is derived:
+ *   - `<>`     → default configuration
+ *   - `<T>`    → codec pair, key codec, value codec, or native type
+ *   - `<K, V>` → explicit key/value codecs or native types
+ *
+ * @note This alias performs compile-time selection of codecs. Native types must have native
+ *       SQLite support (e.g., integral types, floating-point types, std::string, blob,
+ *       nullptr_t). Types without native support must be wrapped in custom codecs.
+ *
+ * @see sqlitemap, key_codec, value_codec, codec_pair
+ */
 template <typename... Ts> using sqlitemap_t = typename sqlitemap_t_helper<Ts...>::type;
 
 // Helper alias templates for value_codec
@@ -2523,6 +2585,44 @@ template <typename IN_T, typename OUT_T> struct value_codec_t_helper<IN_T, OUT_T
     using type = codecs::value_codec<IN_T, OUT_T>;
 };
 
+/**
+ * @brief Convenience alias for constructing value codec types with flexible template arguments.
+ *
+ * `value_codec_t` simplifies the creation of `codecs::value_codec` types by supporting
+ * multiple usage patterns with zero, one, or two template parameters.
+ *
+ * **Usage patterns**
+ *
+ * 1. **No template arguments**
+ *    Uses the library's `default_value_codec`.
+ *    @code
+ *    using vc = value_codec_t<>;  // default value codec
+ *    @endcode
+ *
+ * 2. **Single template argument**
+ *    Interpreted as both the input and output type of the codec.
+ *    @code
+ *    using vc = value_codec_t<int>;  // value_codec<int, int>
+ *    @endcode
+ *
+ * 3. **Two template arguments**
+ *    Explicitly specifies the input and output types.
+ *    @code
+ *    using vc = value_codec_t<MyType, std::string>;  // value_codec<MyType, std::string>
+ *    @endcode
+ *
+ * **Summary**
+ *
+ * This alias reduces boilerplate when defining value codecs, improves readability,
+ * and ensures consistent construction of `codecs::value_codec` types throughout the codebase.
+ *
+ * @tparam Ts
+ *   - `<>`            → use default value codec
+ *   - `<IN_OUT_T>`    → create `value_codec<IN_OUT_T, IN_OUT_T>`
+ *   - `<IN_T, OUT_T>` → create `value_codec<IN_T, OUT_T>`
+ *
+ * @see codecs::value_codec
+ */
 template <typename... Ts> using value_codec_t = typename value_codec_t_helper<Ts...>::type;
 
 // Helper alias templates for key_codec
@@ -2544,6 +2644,44 @@ template <typename IN_T, typename OUT_T> struct key_codec_t_helper<IN_T, OUT_T>
     using type = codecs::key_codec<IN_T, OUT_T>;
 };
 
+/**
+ * @brief Convenience alias for constructing key codec types with flexible template arguments.
+ *
+ * `key_codec_t` simplifies the creation of `codecs::key_codec` types by supporting
+ * multiple usage patterns with zero, one, or two template parameters.
+ *
+ * **Usage patterns**
+ *
+ * 1. **No template arguments**
+ *    Uses the library's `default_key_codec`.
+ *    @code
+ *    using kc = key_codec_t<>;  // default key codec
+ *    @endcode
+ *
+ * 2. **Single template argument**
+ *    Interpreted as both the input and output type of the codec.
+ *    @code
+ *    using kc = key_codec_t<int>;  // key_codec<int, int>
+ *    @endcode
+ *
+ * 3. **Two template arguments**
+ *    Explicitly specifies the input and output types.
+ *    @code
+ *    using kc = key_codec_t<MyType, std::string>;  // key_codec<MyType, std::string>
+ *    @endcode
+ *
+ * **Summary**
+ *
+ * This alias reduces boilerplate when defining key codecs, improves readability,
+ * and ensures consistent construction of `codecs::key_codec` types throughout the codebase.
+ *
+ * @tparam Ts
+ *   - `<>`            → use default key codec
+ *   - `<IN_OUT_T>`    → create `key_codec<IN_OUT_T, IN_OUT_T>`
+ *   - `<IN_T, OUT_T>` → create `key_codec<IN_T, OUT_T>`
+ *
+ * @see codecs::key_codec
+ */
 template <typename... Ts> using key_codec_t = typename key_codec_t_helper<Ts...>::type;
 
 } // namespace bw::sqlitemap
