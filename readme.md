@@ -12,7 +12,7 @@
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)]()
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/bw-hro/sqlitemap/main/LICENSE.txt)
 [![GitHub Releases](https://img.shields.io/github/release/bw-hro/sqlitemap.svg)](https://github.com/bw-hro/sqlitemap/releases)
-[![Vcpkg Version](https://img.shields.io/vcpkg/v/bw-sqlitemap)](https://vcpkg.link/ports/bw-sqlitemap)
+[![Vcpkg Version](https://img.shields.io/vcpkg/v/bw-sqlitemap)](https://vcpkg.io/en/package/bw-sqlitemap)
 [![Conan Version](https://img.shields.io/conan/v/sqlitemap)](https://conan.io/center/recipes/sqlitemap)
 
 **sqlitemap** is a lightweight C++ wrapper around SQLite that provides a simple, map-like interface.  
@@ -51,7 +51,7 @@ include(FetchContent)
 FetchContent_Declare(
         sqlitemap
         GIT_REPOSITORY https://github.com/bw-hro/sqlitemap.git
-        GIT_TAG v1.1.0 # replace with desired version / branch
+        GIT_TAG v1.2.0 # replace with desired version / branch
         SOURCE_SUBDIR "include" # sqlitemap is single header only
 )
 FetchContent_MakeAvailable(sqlitemap)
@@ -77,7 +77,7 @@ file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/latest/download/ge
 include(${CPM_DIR})
 
 # add sqlitemap and SQLite dependencies
-CPMAddPackage(URI "gh:bw-hro/sqlitemap@1.1.0" DOWNLOAD_ONLY YES)
+CPMAddPackage(URI "gh:bw-hro/sqlitemap@1.2.0" DOWNLOAD_ONLY YES)
 CPMAddPackage("gh:sjinks/sqlite3-cmake@3.49.1")
 
 add_executable(sqlitemap-consumer main.cpp)
@@ -111,7 +111,7 @@ Assuming you use cmake, just add the following to *conanfile.txt*
 
 ```
 [requires]
-sqlitemap/[>=1.1.0]
+sqlitemap/[>=1.2.0]
 
 [generators]
 CMakeDeps
